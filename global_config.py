@@ -9,9 +9,8 @@ class Global_Config:
     #data
     rule_path = ProjectRoot/'data'/'rules'
     test_rule = ProjectRoot/'data'/'rules'/'长动.json'
-    union_find_json_path = ProjectRoot/'data'/'union_find.json'
-    rule_csv_path = ProjectRoot/'data'/'rule.csv'
     label_csv = str(ProjectRoot/'data'/'label.csv')
+    default_result = ProjectRoot / 'data' / 'result' /"result.json"
     new_result_json = ProjectRoot / 'data' / 'result' / 'new'/ "result.json"
     old_result_json = ProjectRoot / 'data' / 'result' / 'old'/ "result.json"
     #weights
@@ -26,11 +25,17 @@ class Global_Config:
 
     # 全局分数管理
     flag=0        #判断标志
-    total_score = 0   # 总分
-    current_session_score = 0     # 当前会话得分
+    #总分
+    total_score = []
+    #当前接线分数
+    current_wired_score = 0
     wired_status = ""
-    current_A = ""     #当前触点A
-    current_B = ""     #当前触点B
+
+    #新增触点对，列表形式，例如:[{'pair': ['FU1-1', 'QS1-1'], 'score': 0.0}, {'pair': ['SB3-3/NO', 'SB3-4/NO'], 'score': 0.0}, {'pair': ['SB3-3/NO', 'XT2-5'], 'score': 0.0}, {'pair': ['SB3-4/NO', 'XT2-5'], 'score': 0.0}]
+    add_pairs = []
+    #撤回触点对，列表形式，例如:[{'pair': ['FU1-1', 'QS1-1'], 'score': 0.0}, {'pair': ['SB3-3/NO', 'SB3-4/NO'], 'score': 0.0}, {'pair': ['SB3-3/NO', 'XT2-5'], 'score': 0.0}, {'pair': ['SB3-4/NO', 'XT2-5'], 'score': 0.0}]
+    undo_pairs = []
+
     wiring_results = []           # 接线结果历史
     score_history = []            # 分数历史记录
     is_first_score = False

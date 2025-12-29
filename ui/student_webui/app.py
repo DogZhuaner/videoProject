@@ -30,27 +30,10 @@ score_visualizer = None
 
 
 def reset_contact_status():
-    import os,json,shutil
-    union_path = Global_Config.union_find_json_path
-    file_path = Global_Config.old_result_csv_path
-    csv_path = os.path.join(file_path,'merge_result.csv')
-    default_csv = os.path.join(Global_Config.rule_path,'merge_result.csv')
-    # 检查文件是否存在
-    if os.path.exists(union_path):
-        try:
-            with open(union_path, 'w') as f:
-                json.dump([], f, ensure_ascii=False, indent=4)
-            print("并查集缓存文件内容已清空。")
-        except Exception as e:
-            print(f"删除并查集文件时发生错误: {e}")
-    else:
-        print("并查集缓存文件不存在。")
-
-    os.makedirs(Global_Config.result_csv_path, exist_ok=True)
+    import shutil
     # 执行复制
-    shutil.copy(default_csv, Global_Config.result_csv_path)
-    shutil.copy(default_csv, csv_path)
-    print("接线状态已重置，请重新开始接线。")
+    shutil.copy(Global_Config.default_result, Global_Config.old_result_json)
+    print("接线状态已重置。")
 
 
 def get_rag_module():
@@ -780,23 +763,6 @@ def get_current_score():
         return jsonify({'success': False, 'message': f'获取当前分数失败: {str(e)}'})
 
 
-@app.route('/api/test_score_update', methods=['POST'])
-def test_score_update():
-    """测试更新分数"""
-    try:
-        # 调用match_subgraphs函数来测试分数更新
-        matched_results = match_subgraphs()
-        
-        # 构建响应
-        response = {
-            "success": True,
-            "message": "分数已更新",
-            "matched_results": matched_results
-        }
-        return jsonify(response)
-    except Exception as e:
-        print(f"测试更新分数时出错: {e}")
-        return jsonify({"success": False, "message": f"测试更新分数时出错: {e}"})
 
 @app.route('/api/test_set_contact', methods=['GET', 'POST'])
 def test_set_contact():
@@ -821,6 +787,7 @@ def test_set_contact():
     except Exception as e:
         print(f"测试设置接线触点和分数时出错: {e}")
         return jsonify({"success": False, "message": f"测试设置接线触点和分数时出错: {e}"})
+
 
 @app.route('/api/test_wired_status', methods=['GET'])
 def test_wired_status():

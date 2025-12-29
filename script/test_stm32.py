@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 from serial_tools import STM32Tool
-from calculate_score import evaluate_pairs
+from calculate_score_total import evaluate_pairs
 from deal_StmResult import generate_by_name_json
 from global_config import Global_Config
 stm32_tool = STM32Tool(port='COM4')
@@ -46,7 +46,7 @@ class DetectUI(tk.Tk):
         """读取结果：TODO 在这里写你的逻辑"""
         result = stm32_tool.query_and_parse()
         print(result)
-        generate_by_name_json(result,Global_Config.label_csv, Global_Config.new_result_json)
+        generate_by_name_json(result, Global_Config.label_csv, Global_Config.new_result_json)
         score = evaluate_pairs(Global_Config.new_result_json, Global_Config.test_rule)
         print(score)
     def on_close_detect(self):

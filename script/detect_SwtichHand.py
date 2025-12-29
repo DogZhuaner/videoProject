@@ -4,14 +4,12 @@ import time
 from dataclasses import dataclass
 from typing import Optional, Callable
 from ultralytics import YOLO
-from script.split import split_image_by_regions
-from script.detect_contact import detect_and_save
-from script.merge_result import merge_txt_files
 from global_config import Global_Config
+from serial_tools import STM32Tool
+from calculate_score_total import evaluate_pairs
+from deal_StmResult import generate_by_name_json
 from tools.Python.MvImport.MvCameraControl_class import *
-from script.compare_csv import validate_and_move_files
-from script.update_contact import update_connected_components
-from script.calculateScore import match_subgraphs
+from update_pairs import diff_json_pairs
 import numpy as np
 
 # ========= 你原先程序里的可配置项 =========
@@ -27,6 +25,7 @@ CONF_THRESHOLD = 0.6
 # 截图保存路径（手掌消失瞬间）
 SAVE_PATH = Global_Config.live_capture_path
 
+stm32_tool = STM32Tool(port='COM4')
 
 # ========================================
 
@@ -274,11 +273,17 @@ class YoloDetector:
                         cv2.imwrite(hist_path, frame)
                         print(f"[INFO] 手掌消失超过 1s，截图保存：{SAVE_PATH}")
 
-                    ###################################################################################################################################################################################
+                        ###################################################################################################################################################################################
+
+                        result = stm32_tool.query_and_parse()
+                        print(result)
+                        generate_by_name_json(result, Global_Config.label_csv, Global_Config.new_result_json)
+                        score = evaluate_pairs(Global_Config.new_result_json, Global_Config.test_rule)
+                        Global_Config.total_score = score["total_score"]
+                        Global_Config.add_pairs, Global_Config.undo_pairs = diff_json_pairs(Global_Config.old_result_json, Global_Config.new_result_json)
 
 
-
-                    ####################################################################################################################################################################
+                        ####################################################################################################################################################################################
                     except Exception as e:
                         print(f"[ERROR] 保存截图失败：{e}")
 

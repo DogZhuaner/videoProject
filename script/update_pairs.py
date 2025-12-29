@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import annotations
-
+import shutil
 import json
 from pathlib import Path
 from typing import Any, List, Sequence, Tuple, Union, Optional
-
+from global_config import Global_Config
+from calculate_score_total import score_pairs_to_list
 
 Pair = Tuple[str, str]
 
@@ -82,6 +83,11 @@ def diff_json_pairs(
     # 稳定排序输出，便于日志与测试
     add_pairs = [list(p) for p in sorted(add_set, key=lambda x: (x[0], x[1]))]
     undo_pairs = [list(p) for p in sorted(undo_set, key=lambda x: (x[0], x[1]))]
+
+    Global_Config.add_pairs = score_pairs_to_list(add_pairs,Global_Config.test_rule)
+    Global_Config.undo_pairs = score_pairs_to_list(undo_pairs,Global_Config.test_rule)
+
+    shutil.copy(Global_Config.new_result_json, Global_Config.old_result_json)
 
     return add_pairs, undo_pairs
 

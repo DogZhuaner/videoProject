@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict, List, Tuple, Optional
+from typing import Any, Dict, List, Tuple, Optional,Union
 from global_config import Global_Config
 
 def _canonical_pair(a: str, b: str) -> Tuple[str, str]:
@@ -139,6 +139,64 @@ def evaluate_pairs(
 
     return result
 
+
+def score_pairs_to_list(
+    pairs_input: Union[List[Any], Tuple[Any, ...]],
+    answer_json_path: str,
+    answer_map: Optional[Dict[Tuple[str, str], Dict[str, Any]]] = None,
+) -> List[Dict[str, Any]]:
+    """
+    返回 list[dict]：
+    - 输入可以是单个触点对：["a","b"] 或 ("a","b")
+    - 也可以是多个触点对：[[ "a","b" ],[ "c","d" ]] 或 [("a","b"),("c","d")]
+    - 也支持空列表/空元组：[] / ()，直接返回 []
+
+    返回示例：
+    [
+      {"pair": ["a","b"], "score": 10.0},
+      {"pair": ["c","d"], "score": 0.0},
+    ]
+    """
+    if not isinstance(pairs_input, (list, tuple)):
+        raise ValueError("pairs_input 必须为 list 或 tuple")
+
+    # 关键修复：空输入直接返回空结果
+    if len(pairs_input) == 0:
+        return []
+
+    # 统一整理为“触点对列表”
+    is_multi = (
+        isinstance(pairs_input[0], (list, tuple))
+        and len(pairs_input[0]) == 2
+    )
+
+    if is_multi:
+        pairs_list = list(pairs_input)
+    else:
+        if len(pairs_input) != 2:
+            raise ValueError("单个触点对输入必须长度为2，例如 ['A','B']")
+        pairs_list = [pairs_input]
+
+    # 构建/复用标准答案映射
+    if answer_map is None:
+        answer_map = _build_answer_map(answer_json_path)
+
+    results: List[Dict[str, Any]] = []
+
+    for p in pairs_list:
+        if not isinstance(p, (list, tuple)) or len(p) != 2:
+            raise ValueError(f"发现非法触点对（必须长度为2）：{p}")
+
+        a, b = str(p[0]), str(p[1])
+        key = _canonical_pair(a, b)
+
+        if key in answer_map:
+            score_val = float(answer_map[key].get("score", 0.0) or 0.0)
+            results.append({"pair": [a, b], "score": score_val})
+        else:
+            results.append({"pair": [a, b], "score": 0.0})
+
+    return results
 
 # 示例（如需在本文件直接运行测试，可取消注释）
 if __name__ == "__main__":
