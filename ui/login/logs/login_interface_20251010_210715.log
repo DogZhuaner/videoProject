@@ -1,0 +1,23 @@
+2025-10-10 21:07:15,963 - LoginInterface - WARNING - eventlet²»¿ÉÓÃ£¬Ê¹ÓÃÄ¬ÈÏÒì²½ÒýÇæ
+2025-10-10 21:07:16,009 - LoginInterface - INFO - µÇÂ¼¼ì²éÄ£¿éµ¼Èë³É¹¦
+2025-10-10 21:07:16,012 - LoginInterface - INFO - µçÂ·ÅäÅÌ½ÓÏßÏµÍ³ - Í³Ò»µÇÂ¼½çÃæ Æô¶¯ÖÐ...
+2025-10-10 21:07:16,012 - LoginInterface - INFO - Æô¶¯Ê±¼ä: 2025-10-10 21:07:16
+2025-10-10 21:07:16,012 - LoginInterface - INFO - ·þÎñ½«ÔÚ http://localhost:5000 Æô¶¯
+2025-10-10 21:07:16,012 - werkzeug - WARNING - Werkzeug appears to be used in a production deployment. Consider switching to a production web server instead.
+2025-10-10 21:07:16,022 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://198.18.0.1:5000
+2025-10-10 21:07:16,025 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-10-10 21:07:28,661 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 21:07:28] "[32mGET / HTTP/1.1[0m" 302 -
+2025-10-10 21:07:28,665 - LoginInterface - INFO - ÓÃ»§·ÃÎÊµÇÂ¼Ò³Ãæ
+2025-10-10 21:07:28,670 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 21:07:28] "GET /login_page HTTP/1.1" 200 -
+2025-10-10 21:07:28,963 - LoginInterface - WARNING - Ò³ÃæÎ´ÕÒµ½: /favicon.ico
+2025-10-10 21:07:28,963 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 21:07:28] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-10-10 21:07:32,142 - LoginInterface - INFO - ½ÓÊÕµ½µÇÂ¼ÇëÇó: ÓÃ»§Ãû=123, Éí·Ý=student
+2025-10-10 21:07:32,142 - LoginCheck - INFO - Ö´ÐÐÑ§ÉúµÇÂ¼²éÑ¯: SELECT student_id, student_password, name FROM student WHERE student_id = %s, ²ÎÊý: 123
+2025-10-10 21:07:32,175 - LoginInterface - WARNING - ÓÃ»§µÇÂ¼Ê§°Ü: 123, Ô­Òò: Ñ§ºÅ²»´æÔÚ
+2025-10-10 21:07:32,175 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 21:07:32] "POST /login HTTP/1.1" 200 -
+2025-10-10 21:09:10,729 - LoginInterface - INFO - ÓÃ»§·ÃÎÊµÇÂ¼Ò³Ãæ
+2025-10-10 21:09:10,730 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 21:09:10] "GET /login_page HTTP/1.1" 200 -
+2025-10-10 21:16:10,452 - LoginInterface - INFO - ·þÎñÒÑÍ£Ö¹

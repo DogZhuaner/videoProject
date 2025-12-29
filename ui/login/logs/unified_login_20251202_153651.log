@@ -1,0 +1,16 @@
+2025-12-02 15:36:51,435 - INFO - 登录检查模块导入成功
+2025-12-02 15:36:51,437 - INFO - ✅ 启动统一登录服务（账号密码 + 人脸识别）
+2025-12-02 15:36:51,444 - INFO - 访问地址: http://localhost:5000/login_page
+2025-12-02 15:37:07,896 - INFO - 执行学生登录查询: SELECT sno, student_password, name FROM student WHERE sno = %s, 参数: 20251001
+2025-12-02 15:37:07,906 - ERROR - 数据库查询错误：local variable 'cursor' referenced before assignment
+2025-12-02 15:37:11,726 - INFO - 执行教师登录查询: SELECT tno, teacher_password, name FROM teacher WHERE tno = %s, 参数: 20251001
+2025-12-02 15:37:11,727 - ERROR - 数据库查询错误：local variable 'cursor' referenced before assignment
+2025-12-02 15:37:21,047 - WARNING - From C:\Users\Administrator\miniconda3\envs\videoProject\lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-12-02 15:37:21,988 - WARNING - Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001D6929922F0>: Failed to establish a new connection: [Errno 10051] WSAENETUNREACH')': /faces/
+2025-12-02 15:37:22,603 - WARNING - Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001D692992500>: Failed to establish a new connection: [Errno 10051] WSAENETUNREACH')': /faces/
+2025-12-02 15:37:23,813 - WARNING - Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001D692992740>: Failed to establish a new connection: [Errno 10051] WSAENETUNREACH')': /faces/
+2025-12-02 15:37:23,813 - ERROR - 人脸识别错误: HTTPConnectionPool(host='192.168.1.130', port=80): Max retries exceeded with url: /faces/ (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001D692992980>: Failed to establish a new connection: [Errno 10051] WSAENETUNREACH'))
+2025-12-02 15:38:49,322 - INFO - 执行学生登录查询: SELECT sno, student_password, name FROM student WHERE sno = %s, 参数: 20251001
+2025-12-02 15:40:06,815 - WARNING - 匹配成功：{'user_id': 1, 'role': 'student', 'name': '郁同学'}
+2025-12-02 16:06:24,251 - INFO - 执行学生登录查询: SELECT sno, student_password, name FROM student WHERE sno = %s, 参数: 20251001

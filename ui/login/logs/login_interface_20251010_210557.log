@@ -1,0 +1,7 @@
+2025-10-10 21:05:57,934 - LoginInterface - WARNING - eventlet不可用，使用默认异步引擎
+2025-10-10 21:05:57,992 - LoginInterface - INFO - 登录检查模块导入成功
+2025-10-10 21:05:57,996 - LoginInterface - INFO - 电路配盘接线系统 - 统一登录界面 启动中...
+2025-10-10 21:05:57,996 - LoginInterface - INFO - 启动时间: 2025-10-10 21:05:57
+2025-10-10 21:05:57,997 - LoginInterface - INFO - 服务将在 http://localhost:5000 启动
+2025-10-10 21:05:57,997 - LoginInterface - ERROR - 服务启动失败: The Werkzeug web server is not designed to run in production. Pass allow_unsafe_werkzeug=True to the run() method to disable this error.
+2025-10-10 21:05:57,997 - LoginInterface - INFO - 服务已停止

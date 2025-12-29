@@ -1,0 +1,7 @@
+2025-10-11 08:43:10,840 - LoginInterface - INFO - 使用eventlet作为SocketIO异步引擎
+2025-10-11 08:43:10,882 - LoginInterface - INFO - 登录检查模块导入成功
+2025-10-11 08:43:10,885 - LoginInterface - INFO - 电路配盘接线系统 - 统一登录界面 启动中...
+2025-10-11 08:43:10,885 - LoginInterface - INFO - 启动时间: 2025-10-11 08:43:10
+2025-10-11 08:43:10,885 - LoginInterface - INFO - 服务将在 http://localhost:5000 启动
+2025-10-11 08:43:10,886 - LoginInterface - ERROR - 服务启动失败: [WinError 10048] 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。
+2025-10-11 08:43:10,886 - LoginInterface - INFO - 服务已停止

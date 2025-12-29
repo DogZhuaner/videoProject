@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>登录 - 电路配盘接线系统</title>
+
+  <!-- 依赖 -->
+  <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/static/css/bootstrap-icons.css" rel="stylesheet">
+  <script src="/static/js/socket.io.min.js"></script>
+  <script src="/static/js/vue.global.js"></script>
+
+  <style>
+    :root {
+      --primary-color: #4f46e5;
+      --primary-dark: #3730a3;
+      --success-color: #10b981;
+      --success-dark: #059669;
+      --danger-color: #ef4444;
+      --danger-dark: #dc2626;
+      --warning-color: #f59e0b;
+      --warning-dark: #d97706;
+      --info-color: #3b82f6;
+      --light-bg: #f8fafc;
+      --dark-bg: #1e293b;
+      --border-color: #e2e8f0;
+      --text-primary: #1e293b;
+      --text-secondary: #64748b;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+      --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    }
+
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      min-height: 100vh;
+      font-family: 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      margin: 0;
+    }
+
+    .login-container {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 24px;
+      box-shadow: var(--shadow-xl);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 40px;
+      max-width: 500px;
+      width: 100%;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px);} to { opacity:1; transform: translateY(0);} }
+
+    .login-title {
+      text-align: center;
+      margin-bottom: 30px;
+      background: linear-gradient(135deg, var(--primary-color), var(--info-color));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      font-size: 2.2rem;
+      font-weight: 700;
+    }
+
+    .form-container { display: flex; flex-direction: column; gap: 20px; }
+    .form-group { display: flex; flex-direction: column; gap: 8px; }
+    .form-group label { font-weight: 600; color: var(--text-primary); }
+
+    .form-control {
+      border-radius: 12px;
+      padding: 12px 16px;
+      border: 2px solid var(--border-color);
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      background: rgba(255, 255, 255, 0.8);
+    }
+    .form-control:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(79,70,229,.1); outline: none; }
+
+    .btn-custom {
+      border-radius: 16px; padding: 14px 32px; font-weight: 600; font-size: 1rem;
+      transition: all .3s cubic-bezier(.4,0,.2,1); border: none; position: relative; overflow: hidden; cursor: pointer;
+    }
+    .btn-login { background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: #fff; box-shadow: 0 4px 15px rgba(79,70,229,.4); }
+    .btn-login:hover { background: linear-gradient(135deg, var(--primary-dark), var(--primary-color)); transform: translateY(-2px); box-shadow: 0 8px 25px rgba(79,70,229,.6); }
+
+    .btn-face-detection { background: linear-gradient(135deg, var(--success-color), var(--success-dark)); color: #fff; box-shadow: 0 4px 15px rgba(16,185,129,.4); }
+    .btn-face-detection:hover { background: linear-gradient(135deg, var(--success-dark), var(--success-color)); transform: translateY(-2px); box-shadow: 0 8px 25px rgba(16,185,129,.6); }
+    .btn-face-detection:disabled { background: linear-gradient(135deg, #94a3b8, #64748b); transform: none; box-shadow:none; cursor:not-allowed; }
+
+    .login-tabs { display:flex; border-bottom:2px solid var(--border-color); margin-bottom:25px; }
+    .login-tab { flex:1; text-align:center; padding:12px 20px; cursor:pointer; transition: all .3s ease; font-weight:600; color:var(--text-secondary); position:relative; }
+    .login-tab:hover{ color:var(--primary-color); }
+    .login-tab.active{ color:var(--primary-color); }
+    .login-tab.active::after{ content:''; position:absolute; bottom:-2px; left:0; width:100%; height:2px; background-color:var(--primary-color); }
+
+    .face-canvas-container {
+      position: relative; width: 100%; max-width: 320px; aspect-ratio: 4/3; border-radius: 16px; overflow: hidden;
+      background-color: #0f172a; border: 4px solid var(--border-color); box-shadow: var(--shadow-lg); margin: 0 auto;
+    }
+    #faceCanvas, #cameraFeed { width:100%; height:100%; object-fit:cover; }
+    #cameraFeed { position:absolute; top:0; left:0; display:none; }
+
+    .face-frame {
+      position:absolute; top:50%; left:50%; width:200px; height:200px; margin:-100px 0 0 -100px;
+      border:2px dashed var(--success-color); border-radius:50%; display:flex; align-items:center; justify-content:center; z-index:10; transition:all .3s ease;
+    }
+    .face-frame.detecting { border-color: var(--warning-color); animation: pulse 2s infinite; }
+    .face-frame.detected { border-color: var(--success-color); box-shadow: 0 0 20px var(--success-color); }
+    @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(245,158,11,.4);} 70%{box-shadow:0 0 0 10px rgba(245,158,11,0);} 100%{box-shadow:0 0 0 0 rgba(245,158,11,0);} }
+
+    .status-message { text-align:center; font-weight:600; padding:12px; border-radius:12px; width:100%; max-width:320px; margin: 12px auto 0;margin-bottom: 20px;margin-top: 20px }
+    .status-ready { background: rgba(59,130,246,.1); color:var(--info-color); border:1px solid var(--info-color); }
+    .status-detecting{ background: rgba(245,158,11,.1); color:var(--warning-color); border:1px solid var(--warning-color);}
+    .status-success { background: rgba(16,185,129,.1); color:var(--success-color); border:1px solid var(--success-color);}
+    .status-error  { background: rgba(239,68,68,.1); color:var(--danger-color); border:1px solid var(--danger-color);}
+
+    .identity-selector { display:flex; gap:15px; }
+    .identity-option { flex:1; text-align:center; padding:12px; border:2px solid var(--border-color); border-radius:12px; cursor:pointer; transition: all .3s ease; }
+    .identity-option:hover{ border-color: var(--primary-color); background-color: rgba(79,70,229,.05); }
+    .identity-option.selected{ border-color: var(--primary-color); background-color: rgba(79,70,229,.1); font-weight:600; }
+
+    .spinner { display:inline-block; width:20px; height:20px; border:3px solid rgba(255,255,255,.3); border-radius:50%; border-top-color:#fff; animation: spin 1s ease-in-out infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .login-content { transition: opacity .3s ease, transform .3s ease; }
+    .login-footer { text-align:center; margin-top: 10px; color: var(--text-secondary); font-size:.9rem; }
+
+    .fade-in { animation: fadeIn .3s ease-in-out; }
+    .slide-up { animation: slideUp .3s ease-out; }
+    @keyframes slideUp{ from{opacity:0; transform: translateY(10px);} to{opacity:1; transform: translateY(0);} }
+  </style>
+</head>
+
+<body>
+  <div id="app" class="login-container">
+    <h1 class="login-title">电路配盘接线系统</h1>
+    <div class="login" v-if="!showRegister">
+      <!-- 登录方式切换 -->
+      <div class="login-tabs">
+        <div class="login-tab" :class="{ active: loginMethod === 'password' }" @click="switchLoginMethod('password')">
+          <i class="bi bi-key"></i> 账号密码登录
+        </div>
+        <div class="login-tab" :class="{ active: loginMethod === 'face' }" @click="switchLoginMethod('face')">
+          <i class="bi bi-camera"></i> 人脸识别登录
+        </div>
+      </div>
+
+      <!-- 账号密码登录 -->
+      <div v-if="loginMethod === 'password'" class="login-content fade-in">
+        <div class="form-container">
+          <!-- 身份选择（仅密码登录需要） -->
+          <div class="form-group">
+            <label>选择身份</label>
+            <div class="identity-selector">
+              <div class="identity-option" :class="{ selected: selectedIdentity === 'student' }" @click="selectIdentity('student')">
+                <i class="bi bi-person-circle" style="font-size:1.5rem; display:block; margin-bottom:8px;"></i> 学生
+              </div>
+              <div class="identity-option" :class="{ selected: selectedIdentity === 'teacher' }" @click="selectIdentity('teacher')">
+                <i class="bi bi-person-badge" style="font-size:1.5rem; display:block; margin-bottom:8px;"></i> 教师
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="username">用户名</label>
+            <input id="username" class="form-control" type="text" placeholder="请输入用户名" v-model="formData.username" :disabled="isLoading">
+          </div>
+
+          <div class="form-group">
+            <label for="password">密码</label>
+            <input id="password" class="form-control" type="password" placeholder="请输入密码" v-model="formData.password" :disabled="isLoading">
+          </div>
+
+          <button class="btn-custom btn-login" @click="submitLogin" :disabled="isLoading || !formData.username || !formData.password || !formData.identity">
+            <span v-if="isLoading"><i class="spinner"></i> 登录中...</span>
+            <span v-else>账号密码登录</span>
+          </button>
+        </div>
+        <!-- 提示仅在密码登录且未选身份时出现 -->
+        <div v-if="loginMethod === 'password' && !formData.identity" class="login-footer">
+          <p style="color: var(--warning-color);">请先选择登录身份</p>
+        </div>
+      </div>
+
+      <!-- 人脸识别登录 -->
+      <div v-if="loginMethod === 'face'" class="login-content fade-in">
+        <div class="face-detection-container">
+          <div class="face-canvas-container">
+            <video id="cameraFeed" autoplay muted playsinline></video>
+            <canvas id="faceCanvas" width="320" height="240"></canvas>
+
+            <div class="face-frame"
+                 :class="{ detecting: faceDetectionStatus === 'detecting', detected: faceDetectionStatus === 'detected' }">
+              <i class="bi"
+                 :class="{
+                    'bi-camera': faceDetectionStatus === 'ready',
+                    'bi-hourglass-split': isCountingDown,
+                    'bi-check-circle': faceDetectionStatus === 'detected'
+                 }"
+                 style="font-size: 2rem; color: white; opacity: 0.85;">
+              </i>
+            </div>
+          </div>
+
+          <div class="status-message "
+               :class="{
+                  'status-ready': faceDetectionStatus === 'ready',
+                  'status-detecting': faceDetectionStatus === 'detecting' || isCountingDown,
+                  'status-success': faceDetectionStatus === 'detected',
+                  'status-error': faceDetectionStatus === 'error'
+               }">
+            {{ faceDetectionMessage }}
+          </div>
+
+          <button class="btn-custom btn-face-detection w-100"
+                  @click="startFaceDetection"
+                  :disabled="isProcessing || isCooldown">
+            <span v-if="isProcessing"><i class="spinner"></i> 正在识别...</span>
+            <span v-else-if="isCooldown">{{ cooldown }}s 后可重试</span>
+            <span v-else><i class="bi bi-camera"></i> 开始人脸识别</span>
+          </button>
+        </div>
+      </div>
+      <div class="login-footer" style="text-align:center; margin-top:20px;">
+    <p>还没有账号？
+      <a href="javascript:void(0)" style="color:var(--primary-color)" @click="showRegister = true">
+        点击注册
+      </a>
+    </p>
+    </div>
+  </div>
+
+   <!--//用户注册模块-->
+  <div class="register fade-in slide-up" v-else>
+  <div class="login-tabs">
+    <div class="login-tab" :class="{ active: loginMethod === 'password' }" @click="switchLoginMethod('password')"><i class="bi bi-key"></i> 用户注册</div>
+  </div>
+
+  <div class="form-container">
+    <!-- 身份选择 -->
+    <div class="form-group">
+      <label>选择身份</label>
+      <div class="identity-selector">
+        <div class="identity-option"
+             :class="{ selected: registerData.identity === 'student' }"
+             @click="registerData.identity = 'student'">
+          <i class="bi bi-person-circle" style="font-size:1.5rem; display:block; margin-bottom:8px;"></i>
+          学生
+        </div>
+        <div class="identity-option"
+             :class="{ selected: registerData.identity === 'teacher' }"
+             @click="registerData.identity = 'teacher'">
+          <i class="bi bi-person-badge" style="font-size:1.5rem; display:block; margin-bottom:8px;"></i>
+          教师
+        </div>
+      </div>
+    </div>
+
+    <!-- 用户名 -->
+    <div class="form-group">
+      <label for="regUsername">用户名</label>
+      <input id="regUsername" class="form-control" type="text" placeholder="请输入用户名"
+             v-model="registerData.username" :disabled="isRegistering">
+    </div>
+
+    <!-- 审核员工号 -->
+    <div class="form-group">
+      <label for="regUsername">审核员工号</label>
+      <input id="reviewUser" class="form-control" type="text" placeholder="请输入审核人工号"
+             v-model="registerData.reviewUser" :disabled="isRegistering">
+    </div>
+
+    <!-- 密码 -->
+    <div class="form-group">
+      <label for="regPassword">密码</label>
+      <input id="regPassword" class="form-control" type="password" placeholder="请输入密码"
+             v-model="registerData.password" :disabled="isRegistering">
+    </div>
+
+    <!-- 确认密码 -->
+    <div class="form-group">
+      <label for="regConfirm">确认密码</label>
+      <input id="regConfirm" class="form-control" type="password" placeholder="请再次输入密码"
+             v-model="registerData.confirmPassword" :disabled="isRegistering">
+    </div>
+
+    <!-- 注册按钮 -->
+    <button class="btn-custom btn-login w-100"
+            @click="submitRegister"
+            :disabled="isRegistering || !registerData.username || !registerData.password || !registerData.confirmPassword || !registerData.identity">
+      <span v-if="isRegistering"><i class="spinner"></i> 注册中...</span>
+      <span v-else><i class="bi bi-person-plus"></i> 注册</span>
+    </button>
+  </div>
+
+  <!-- 底部返回登录 -->
+  <div class="login-footer" style="text-align:center; margin-top:20px;">
+    <p>已有账号？
+      <a href="javascript:void(0)" style="color:var(--primary-color)" @click="showRegister = false">
+        返回登录
+      </a>
+    </p>
+  </div>
+</div>
+</div>
+
+  <script>
+    const { createApp } = Vue;
+    const API_BASE = window.location.origin.includes('5000') ? '' : 'http://127.0.0.1:5000';
+    // 账号密码登录接口
+    const API_LOGIN = `${API_BASE}/login`;
+    // 人脸识别接口
+    const API_RECOGNIZE = `${API_BASE}/recognize_face`;
+
+    const app = createApp({
+      data() {
+        return {
+          // 表单
+          formData: { username: '', password: '', identity: '' },
+          selectedIdentity: '',
+          showRegister: false, // 是否显示注册页面
+          registerData: { username: '',reviewUser:'', password: '', confirmPassword: '', identity: '' },
+          isRegistering: false,
+
+
+          // UI 状态
+          loginMethod: 'password', // 'password' | 'face'
+          isLoading: false,
+
+          // 人脸识别状态
+          isProcessing: false,   // 倒计时/上传/等待返回 期间
+          isCooldown: false,     // 失败后的冷却
+          cooldown: 0,
+          countdown: 0,
+          isCountingDown: false,
+          faceDetectionStatus: 'ready', // ready | detecting | detected | error
+          faceDetectionMessage: '请点击开始人脸识别',
+
+          // 资源
+          cameraStream: null,
+
+          // 定时器句柄
+          _countdownTimer: null,
+          _cooldownTimer: null,
+        }
+      },
+
+      mounted() {
+        // 初始绘制
+        this.canvas = document.getElementById('faceCanvas');
+        if (this.canvas) {
+        this.ctx = this.canvas.getContext('2d');
+        this.drawWelcomeScreen();
+      }
+        // 页面关闭前释放摄像头
+        window.addEventListener('beforeunload', this.stopCamera);
+      },
+
+      methods: {
+        // 登录方式切换
+        switchLoginMethod(method) {
+          if (method === this.loginMethod) return;
+          // 切换到其他方式前，确保释放资源
+          this.cancelAllTimers();
+          this.stopCamera();
+          this.isProcessing = false;
+          this.isCooldown = false;
+          this.faceDetectionStatus = 'ready';
+          this.faceDetectionMessage = method === 'face' ? '请点击开始人脸识别' : '';
+          this.loginMethod = method;
+          if (method === 'face') {
+              // 等 DOM 渲染完成再取 canvas
+              this.$nextTick(() => {
+                const c = document.getElementById('faceCanvas');
+                if (c) {
+                  this.canvas = c;
+                  this.ctx = c.getContext('2d');
+                  this.drawWelcomeScreen();
+                }
+              });
+          }
+        },
+      ensureCanvasReady() {
+        if (!this.canvas || !this.ctx) {
+          const c = document.getElementById('faceCanvas');
+          if (c) {
+            this.canvas = c;
+            this.ctx = c.getContext('2d');
+          }
+        }
+      },
+          drawWelcomeScreen() {
+        this.ensureCanvasReady();
+        if (!this.ctx) return;
+        // ... 原来的绘制逻辑 ...
+      },
+
+
+        // 身份选择（仅密码登录使用）
+        selectIdentity(identity) {
+          this.selectedIdentity = identity;
+          this.formData.identity = identity;
+        },
+
+        // 账号密码登录
+        submitLogin() {
+          if (!this.formData.username || !this.formData.password || !this.formData.identity) {
+            this.showNotification('请填写所有必填字段', 'error');
+            return;
+          }
+          this.isLoading = true;
+          fetch(API_LOGIN, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+              username: this.formData.username,
+              password: this.formData.password,
+              identity: this.formData.identity
+            })
+          })
+          .then(r => r.json())
+          .then(data => {
+            this.isLoading = false;
+            if (data.success) {
+              this.showNotification('登录成功，正在跳转...', 'success');
+              setTimeout(() => { window.location.href = data.redirect; }, 1200);
+            } else {
+              this.showNotification(data.message || '登录失败，请重试', 'error');
+            }
+          })
+          .catch(err => {
+            console.error('Login error:', err);
+            this.isLoading = false;
+            this.showNotification('网络错误，请检查连接', 'error');
+          });
+        },
+
+        // ===== 人脸识别：开始（只上传一次）=====
+        startFaceDetection() {
+          if (this.isProcessing || this.isCooldown) return;
+
+          const video = document.getElementById('cameraFeed');
+          const canvas = document.getElementById('faceCanvas');
+
+          this.isProcessing = true;
+          this.faceDetectionStatus = 'ready';
+          this.faceDetectionMessage = '正在请求摄像头权限...';
+
+          // 展示视频，隐藏画布
+          video.style.display = 'block';
+          canvas.style.display = 'none';
+
+          navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+              this.cameraStream = stream;
+              video.srcObject = stream;
+
+              const onReady = () => {
+                video.removeEventListener('loadedmetadata', onReady);
+                video.play();
+
+                // 2s 倒计时
+                this.countdown = 2;
+                this.isCountingDown = true;
+                this.faceDetectionStatus = 'detecting';
+                this.faceDetectionMessage = `请保持人脸在画面中间，${this.countdown}s 后开始认证`;
+
+                this._countdownTimer && clearInterval(this._countdownTimer);
+                this._countdownTimer = setInterval(() => {
+                  this.countdown--;
+                  if (this.countdown > 0) {
+                    this.faceDetectionMessage = `请保持人脸在画面中间，${this.countdown}s 后开始认证`;
+                  } else {
+                    clearInterval(this._countdownTimer);
+                    this.isCountingDown = false;
+                    this.faceDetectionMessage = '采集中...';
+                    this.captureAndSendOnce(); // ← 只上传一次
+                  }
+                }, 1000);
+              };
+
+              if (video.readyState >= 1) onReady(); else video.addEventListener('loadedmetadata', onReady);
+            })
+            .catch(err => {
+              console.error('摄像头启动失败:', err);
+              this.faceDetectionStatus = 'error';
+              this.faceDetectionMessage = '无法访问摄像头，请检查权限或在 HTTPS / localhost 环境下访问';
+              this.isProcessing = false;
+              video.style.display = 'none';
+              canvas.style.display = 'block';
+              this.drawWelcomeScreen();
+            });
+        },
+
+        submitRegister() {
+          if (!this.registerData.username || !this.registerData.password || !this.registerData.confirmPassword || !this.registerData.identity) {
+            this.showNotification('请填写所有必填字段', 'error');
+            return;
+          }
+          if (this.registerData.password !== this.registerData.confirmPassword) {
+            this.showNotification('两次输入的密码不一致', 'error');
+            return;
+          }
+
+          this.isRegistering = true;
+          fetch(`${API_BASE}/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams(this.registerData)
+          })
+            .then(r => r.json())
+            .then(data => {
+              this.isRegistering = false;
+              if (data.success) {
+                this.showNotification('注册成功，请登录', 'success');
+                this.showRegister = false;
+              } else {
+                this.showNotification(data.message || '注册失败，请重试', 'error');
+              }
+            })
+            .catch(err => {
+              console.error('Register error:', err);
+              this.isRegistering = false;
+              this.showNotification('网络错误，请检查连接', 'error');
+            });
+        },
+
+
+        // 加载学生信息
+                async loadStudentInfo() {
+                    try {
+                        // 首先尝试从URL参数中获取学生信息
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const student_id = urlParams.get('student_id');
+                        const student_name = urlParams.get('student_name');
+
+                        if (student_id && student_name) {
+                            // 如果URL参数中有学生信息，直接使用
+                            this.studentInfo = {
+                                student_id: student_id,
+                                student_name: student_name
+                            };
+                            console.log('从URL参数加载学生信息:', this.studentInfo);
+                        } else {
+                            // 如果URL参数中没有，则从API获取
+                            const response = await fetch('/api/student_info');
+                            const data = await response.json();
+                            this.studentInfo = data;
+                            console.log('从API加载学生信息:', this.studentInfo);
+                        }
+                    } catch (error) {
+                        console.error('加载学生信息失败:', error);
+                        // 尝试再次从URL参数获取
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const student_id = urlParams.get('student_id');
+                        const student_name = urlParams.get('student_name');
+                        if (student_id) {
+                            this.studentInfo.student_id = student_id;
+                        }
+                        if (student_name) {
+                            this.studentInfo.student_name = student_name;
+                        }
+                    }
+                },
+
+        // 抓拍并上传一次
+        captureAndSendOnce() {
+          const video = document.getElementById('cameraFeed');
+          if (!video || !video.videoWidth || !video.videoHeight) {
+            this.failAndCooldown('视频未就绪，请重试');
+            return;
+          }
+
+          // 截图
+          const off = document.createElement('canvas');
+          off.width = video.videoWidth;
+          off.height = video.videoHeight;
+          const ctx = off.getContext('2d');
+          ctx.drawImage(video, 0, 0, off.width, off.height);
+          const dataURL = off.toDataURL('image/jpeg', 0.9);
+
+          fetch(API_RECOGNIZE, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: dataURL })
+          })
+          .then(r => r.json())
+          .then(data => {
+            console.log('[recognize_face] 返回:', data);
+
+            if (data && data.success) {
+              // 建议后端一并返回 role：student / teacher
+              const { emp_id, role, name } = data;
+              let redirectUrl;
+              const stuUrl = `http://localhost:8088`;
+              const teaUrl = `http://localhost:8090`;
+
+              if (role === 'teacher') {
+                  redirectUrl = `${teaUrl}/?teacher_id=${encodeURIComponent(emp_id)}&teacher_name=${encodeURIComponent(name)}`;
+              } else if (role === 'student') {
+                  redirectUrl = `${stuUrl}/?student_id=${encodeURIComponent(emp_id)}&student_name=${encodeURIComponent(name)}`;
+              }
+
+              this.faceDetectionStatus = 'detected';
+              this.faceDetectionMessage = `识别成功！工号：${data.emp_id || ''}，即将跳转...`;
+              this.stopCamera();
+              this.isProcessing = false;
+
+              setTimeout(() => { window.location.href = redirectUrl; }, 1500);
+            } else {
+              this.failAndCooldown((data && data.message) || '未匹配到人脸');
+            }
+          })
+          .catch(err => {
+            console.error('上传/识别失败:', err);
+            this.failAndCooldown('识别请求失败，请检查网络或后端服务');
+          });
+        },
+
+        // 失败并进入 5s 冷却
+        failAndCooldown(msg) {
+          this.faceDetectionStatus = 'error';
+          this.faceDetectionMessage = msg || '识别失败';
+          this.stopCamera();        // 失败也关闭摄像头
+          this.isProcessing = false;
+
+          // 进入 5s 冷却
+          this.isCooldown = true;
+          this.cooldown = 5;
+          this.faceDetectionMessage = `${this.cooldown}s 后可再次点击进行识别`;
+
+          this._cooldownTimer && clearInterval(this._cooldownTimer);
+          this._cooldownTimer = setInterval(() => {
+            this.cooldown--;
+            if (this.cooldown > 0) {
+              this.faceDetectionMessage = `${this.cooldown}s 后可再次点击进行识别`;
+            } else {
+              clearInterval(this._cooldownTimer);
+              this.isCooldown = false;
+              this.faceDetectionStatus = 'ready';
+              this.faceDetectionMessage = '请点击开始人脸识别';
+              this.drawWelcomeScreen();
+            }
+          }, 1000);
+        },
+
+        // 关闭摄像头 & 还原画面
+        stopCamera() {
+          const video = document.getElementById('cameraFeed');
+          const canvas = document.getElementById('faceCanvas');
+
+          if (this.cameraStream) {
+            this.cameraStream.getTracks().forEach(t => t.stop());
+            this.cameraStream = null;
+          }
+          if (video) video.style.display = 'none';
+          if (canvas) canvas.style.display = 'block';
+        },
+
+        // 取消所有定时器
+        cancelAllTimers() {
+          this._countdownTimer && clearInterval(this._countdownTimer);
+          this._cooldownTimer && clearInterval(this._cooldownTimer);
+          this._countdownTimer = null;
+          this._cooldownTimer = null;
+        },
+
+        // 画欢迎画面（占位）
+        drawWelcomeScreen() {
+          if (!this.ctx) return;
+          this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+          this.ctx.fillStyle = '#0f172a';
+          this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+          this.ctx.stroke();
+
+          this.ctx.fillStyle = '#f8fafc';
+          this.ctx.font = '16px Microsoft YaHei';
+          this.ctx.textAlign = 'center';
+          this.ctx.fillText('点击开始人脸识别', this.canvas.width/2, this.canvas.height/2 + 40);
+        },
+
+        // 轻量提示
+        showNotification(message, type='info') {
+          const notification = document.createElement('div');
+          notification.className = `fixed top-5 right-5 p-4 rounded-lg shadow-lg z-50 fade-in slide-up`;
+          notification.style.backgroundColor = type === 'success'
+            ? 'rgba(16,185,129,.9)'
+            : type === 'error'
+              ? 'rgba(239,68,68,.9)'
+              : 'rgba(59,130,246,.9)';
+          notification.style.color = 'white';
+          notification.textContent = message;
+          document.body.appendChild(notification);
+          setTimeout(() => {
+            notification.style.opacity = '0';
+            notification.style.transition = 'opacity .3s ease-out';
+            setTimeout(() => { document.body.removeChild(notification); }, 300);
+          }, 2500);
+        }
+      },
+
+      beforeUnmount() {
+        this.cancelAllTimers();
+        this.stopCamera();
+        window.removeEventListener('beforeunload', this.stopCamera);
+      }
+    });
+
+    app.mount('#app');
+  </script>
+</body>
+</html>

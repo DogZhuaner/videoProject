@@ -1,0 +1,30 @@
+2025-10-10 21:16:15,600 - LoginInterface - WARNING - eventlet≤ªø…”√£¨ π”√ƒ¨»œ“Ï≤Ω“˝«Ê
+2025-10-10 21:16:15,651 - LoginInterface - INFO - µ«¬ººÏ≤Èƒ£øÈµº»Î≥…π¶
+2025-10-10 21:16:15,654 - LoginInterface - INFO - µÁ¬∑≈‰≈ÃΩ”œﬂœµÕ≥ - Õ≥“ªµ«¬ºΩÁ√Ê ∆Ù∂Ø÷–...
+2025-10-10 21:16:15,654 - LoginInterface - INFO - ∆Ù∂Ø ±º‰: 2025-10-10 21:16:15
+2025-10-10 21:16:15,654 - LoginInterface - INFO - ∑˛ŒÒΩ´‘⁄ http://localhost:5000 ∆Ù∂Ø
+2025-10-10 21:16:15,655 - werkzeug - WARNING - Werkzeug appears to be used in a production deployment. Consider switching to a production web server instead.
+2025-10-10 21:16:15,664 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://198.18.0.1:5000
+2025-10-10 21:16:15,668 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-10-10 21:16:18,639 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 21:16:18] "[32mGET / HTTP/1.1[0m" 302 -
+2025-10-10 21:16:18,643 - LoginInterface - INFO - ”√ªß∑√Œ µ«¬º“≥√Ê
+2025-10-10 21:16:18,649 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 21:16:18] "GET /login_page HTTP/1.1" 200 -
+2025-10-10 21:16:52,027 - LoginInterface - INFO - ”√ªß∑√Œ µ«¬º“≥√Ê
+2025-10-10 21:16:52,028 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 21:16:52] "GET /login_page HTTP/1.1" 200 -
+2025-10-10 21:17:08,721 - LoginInterface - INFO - Ω” ’µΩµ«¬º«Î«Û: ”√ªß√˚=31231, …Ì∑›=student
+2025-10-10 21:17:08,722 - LoginCheck - INFO - ÷¥––—ß…˙µ«¬º≤È—Ø: SELECT student_id, student_password, name FROM student WHERE student_id = %s, ≤Œ ˝: 31231
+2025-10-10 21:17:08,756 - LoginInterface - WARNING - ”√ªßµ«¬º ß∞‹: 31231, ‘≠“Ú: —ß∫≈≤ª¥Ê‘⁄
+2025-10-10 21:17:08,757 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 21:17:08] "POST /login HTTP/1.1" 200 -
+2025-10-10 21:18:55,245 - LoginInterface - WARNING - “≥√ÊŒ¥’“µΩ: /.well-known/appspecific/com.chrome.devtools.json
+2025-10-10 21:18:55,246 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 21:18:55] "[33mGET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1[0m" 404 -
+2025-10-10 21:19:06,076 - LoginInterface - INFO - ”√ªß∑√Œ µ«¬º“≥√Ê
+2025-10-10 21:19:06,077 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 21:19:06] "GET /login_page HTTP/1.1" 200 -
+2025-10-10 21:19:06,197 - LoginInterface - WARNING - “≥√ÊŒ¥’“µΩ: /favicon.ico
+2025-10-10 21:19:06,204 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 21:19:06] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-10-10 21:19:12,344 - LoginInterface - WARNING - “≥√ÊŒ¥’“µΩ: /.well-known/appspecific/com.chrome.devtools.json
+2025-10-10 21:19:12,344 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 21:19:12] "[33mGET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1[0m" 404 -
+2025-10-10 21:51:10,220 - LoginInterface - INFO - ”√ªß∑√Œ µ«¬º“≥√Ê
+2025-10-10 21:51:10,220 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 21:51:10] "GET /login_page HTTP/1.1" 200 -

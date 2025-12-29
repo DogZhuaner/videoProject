@@ -1,0 +1,5 @@
+2025-11-29 12:59:40,353 - INFO - 登录检查模块导入成功
+2025-11-29 12:59:40,354 - INFO - ✅ 启动统一登录服务（账号密码 + 人脸识别）
+2025-11-29 12:59:40,355 - INFO - 访问地址: http://localhost:5000/login_page
+2025-11-29 12:59:51,992 - WARNING - From C:\Users\Administrator\miniconda3\envs\videoProject\lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+

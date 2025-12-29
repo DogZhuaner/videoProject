@@ -1,0 +1,5 @@
+2025-11-27 16:50:22,902 - INFO - 登录检查模块导入成功
+2025-11-27 16:50:22,904 - INFO - ✅ 启动统一登录服务（账号密码 + 人脸识别）
+2025-11-27 16:50:22,904 - INFO - 访问地址: http://localhost:5000/login_page
+2025-11-27 16:50:40,011 - INFO - 执行教师登录查询: SELECT tno, teacher_password, name FROM teacher WHERE tno = %s, 参数: 20252001
+2025-11-27 16:56:06,462 - INFO - 执行教师登录查询: SELECT tno, teacher_password, name FROM teacher WHERE tno = %s, 参数: 20252001

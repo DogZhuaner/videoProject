@@ -1,0 +1,2 @@
+2025-11-27 16:48:23,427 - LoginInterface - INFO - 使用eventlet作为SocketIO异步引擎
+2025-11-27 16:48:23,427 - LoginInterface - ERROR - 无法导入登录检查模块: No module named 'MultiModelVideo'

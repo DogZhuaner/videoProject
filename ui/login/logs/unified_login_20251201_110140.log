@@ -1,0 +1,17 @@
+2025-12-01 11:01:40,519 - INFO - 登录检查模块导入成功
+2025-12-01 11:01:40,521 - INFO - ✅ 启动统一登录服务（账号密码 + 人脸识别）
+2025-12-01 11:01:40,529 - INFO - 访问地址: http://localhost:5000/login_page
+2025-12-01 11:01:57,708 - INFO - 执行学生登录查询: SELECT sno, student_password, name FROM student WHERE sno = %s, 参数: 20251004
+2025-12-01 11:02:44,888 - INFO - 执行教师登录查询: SELECT tno, teacher_password, name FROM teacher WHERE tno = %s, 参数: 20252001
+2025-12-01 11:03:20,999 - WARNING - From C:\Users\Administrator\miniconda3\envs\videoProject\lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-12-01 11:03:38,758 - WARNING - 匹配成功：{'user_id': 1, 'role': 'student', 'name': '郁同学'}
+2025-12-01 11:03:52,707 - WARNING - 匹配成功：{'user_id': 2, 'role': 'teacher', 'name': '夏老师'}
+2025-12-01 11:05:06,063 - INFO - 接收到注册请求: 用户ID=20251008, 姓名=胡同学, 身份=student
+2025-12-01 11:05:06,323 - WARNING - 用户注册失败: 20251008, 原因: User already exists
+2025-12-01 11:05:17,271 - INFO - 接收到注册请求: 用户ID=20251009, 姓名=胡同学, 身份=student
+2025-12-01 11:05:17,525 - WARNING - 用户注册失败: 20251009, 原因: User already exists
+2025-12-01 11:05:21,552 - INFO - 接收到注册请求: 用户ID=20251010, 姓名=胡同学, 身份=student
+2025-12-01 11:05:21,809 - INFO - 用户注册成功: 20251010
+2025-12-01 11:05:27,463 - INFO - 执行教师登录查询: SELECT tno, teacher_password, name FROM teacher WHERE tno = %s, 参数: 20252001
+2025-12-01 11:06:54,316 - INFO - 执行教师登录查询: SELECT tno, teacher_password, name FROM teacher WHERE tno = %s, 参数: 20252001

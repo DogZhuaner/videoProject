@@ -1,0 +1,10 @@
+2025-11-29 12:13:11,750 - INFO - 登录检查模块导入成功
+2025-11-29 12:13:11,751 - INFO - ✅ 启动统一登录服务（账号密码 + 人脸识别）
+2025-11-29 12:13:11,751 - INFO - 访问地址: http://localhost:5000/login_page
+2025-11-29 12:13:29,204 - WARNING - From C:\Users\Administrator\miniconda3\envs\videoProject\lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-11-29 12:13:30,435 - WARNING - 比对 20051001.jpg 出错: ⛓️‍💥 An exception occurred while downloading vgg_face_weights.h5 from https://github.com/serengil/deepface_models/releases/download/v1.0/vgg_face_weights.h5. Consider downloading it manually to C:\Users\Administrator\.deepface\weights\vgg_face_weights.h5.
+2025-11-29 12:13:38,877 - WARNING - 比对 20051001.jpg 出错: ⛓️‍💥 An exception occurred while downloading vgg_face_weights.h5 from https://github.com/serengil/deepface_models/releases/download/v1.0/vgg_face_weights.h5. Consider downloading it manually to C:\Users\Administrator\.deepface\weights\vgg_face_weights.h5.
+2025-11-29 12:13:54,905 - WARNING - 比对 20051001.jpg 出错: ⛓️‍💥 An exception occurred while downloading vgg_face_weights.h5 from https://github.com/serengil/deepface_models/releases/download/v1.0/vgg_face_weights.h5. Consider downloading it manually to C:\Users\Administrator\.deepface\weights\vgg_face_weights.h5.
+2025-11-29 12:14:52,656 - WARNING - 比对 20051001.jpg 出错: ⛓️‍💥 An exception occurred while downloading vgg_face_weights.h5 from https://github.com/serengil/deepface_models/releases/download/v1.0/vgg_face_weights.h5. Consider downloading it manually to C:\Users\Administrator\.deepface\weights\vgg_face_weights.h5.
+2025-11-29 12:15:05,361 - INFO - 执行学生登录查询: SELECT sno, student_password, name FROM student WHERE sno = %s, 参数: 20251004

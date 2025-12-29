@@ -1,0 +1,2827 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教师端 - 电路配盘接线系统</title>
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/bootstrap-icons.css" rel="stylesheet">
+    <script src="/static/js/socket.io.min.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --primary-dark: #3730a3;
+            --primary-light: #818cf8;
+            --secondary-color: #8b5cf6;
+            --secondary-dark: #7c3aed;
+            --success-color: #10b981;
+            --success-dark: #059669;
+            --success-light: #34d399;
+            --danger-color: #ef4444;
+            --danger-dark: #dc2626;
+            --danger-light: #f87171;
+            --warning-color: #f59e0b;
+            --warning-dark: #d97706;
+            --warning-light: #fbbf24;
+            --light-bg: #f8fafc;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-radius: 24px;
+            --card-radius: 16px;
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-hover: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            --card-bg-opacity: 0.9;
+            /* 新增的浅色变量 */
+            --light-blue: #3b82f6;
+            --light-blue-dark: #2563eb;
+            --light-blue-light: #93c5fd;
+            --light-cyan: #06b6d4;
+            --light-cyan-dark: #0891b2;
+            --light-cyan-light: #67e8f9;
+        }
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            min-height: 100vh;
+            height: 100vh;
+            font-family: 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            margin: 0;
+            overflow-x: hidden;
+        }
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 0;
+            box-shadow: none;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+        .main-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            z-index: 0;
+        }
+        .header-gradient {
+            background: linear-gradient(135deg, var(--primary-color), var(--success-color));
+            background-size: 200% 200%;
+            animation: gradientShift 8s ease infinite;
+            color: white;
+            padding: 25px 40px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+        .header-gradient h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        .status-bar {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 12px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 16px;
+            color: var(--text-primary);
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            position: relative;
+            z-index: 1;
+        }
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        .status-connected {
+            background: var(--success-color);
+            animation: pulse 2s infinite;
+        }
+        .status-disconnected {
+            background: var(--danger-color);
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        .btn-container {
+            padding: 40px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 40px;
+            height: calc(100% - 180px);
+            max-width: 1200px;
+            margin: 0 auto;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-color) rgba(0,0,0,0.05);
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            min-height: 260px;
+            aspect-ratio: 1.1;
+            border-radius: var(--card-radius);
+            box-shadow: var(--shadow-lg);
+            padding: 25px 15px;
+            transition: all 0.3s ease;
+            text-align: center;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85));
+        }
+        .btn-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        .btn-container::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.05);
+            border-radius: 10px;
+        }
+        .btn-container::-webkit-scrollbar-thumb {
+            background-color: var(--primary-color);
+            border-radius: 10px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(79, 70, 229, 0.05));
+        }
+        .btn-success {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
+        }
+        .btn-warning {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05));
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
+        }
+        /* 新增的浅色按钮样式 */
+        .btn-light-blue {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05));
+        }
+        .btn-light-cyan {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(6, 182, 212, 0.05));
+        }
+        .btn-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .btn-primary::before {
+            background: linear-gradient(90deg, var(--primary-light), var(--primary-color));
+        }
+        .btn-success::before {
+            background: linear-gradient(90deg, var(--success-light), var(--success-color));
+        }
+        .btn-warning::before {
+            background: linear-gradient(90deg, var(--warning-light), var(--warning-color));
+        }
+        .btn-danger::before {
+            background: linear-gradient(90deg, var(--danger-light), var(--danger-color));
+        }
+        .btn-info::before {
+            background: linear-gradient(90deg, #3abff8, #0ea5e9);
+        }
+        /* 新增的浅色按钮顶部渐变 */
+        .btn-light-blue::before {
+            background: linear-gradient(90deg, var(--light-blue-light), var(--light-blue));
+        }
+        .btn-light-cyan::before {
+            background: linear-gradient(90deg, var(--light-cyan-light), var(--light-cyan));
+        }
+        .btn-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: var(--shadow-hover);
+        }
+        .btn-card:hover::before {
+            opacity: 1;
+        }
+        .btn-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 32px;
+            color: white;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.3s ease;
+        }
+        .btn-card:hover .btn-icon {
+            transform: scale(1.05) rotate(5deg);
+        }
+        .btn-primary .btn-icon {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        }
+        .btn-success .btn-icon {
+            background: linear-gradient(135deg, var(--success-color), var(--success-dark));
+        }
+        .btn-warning .btn-icon {
+            background: linear-gradient(135deg, var(--warning-color), var(--warning-dark));
+        }
+        .btn-danger .btn-icon {
+            background: linear-gradient(135deg, var(--danger-color), var(--danger-dark));
+        }
+        .btn-info .btn-icon {
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+        }
+        /* 新增的浅色按钮图标样式 */
+        .btn-light-blue .btn-icon {
+            background: linear-gradient(135deg, var(--light-blue), var(--light-blue-dark));
+        }
+        .btn-light-cyan .btn-icon {
+            background: linear-gradient(135deg, var(--light-cyan), var(--light-cyan-dark));
+        }
+        .btn-text {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 10;
+            text-shadow: 0 1px 1px rgba(255,255,255,0.8);
+        }
+        .btn-subtext {
+            font-size: 16px;
+            color: #444;
+            position: relative;
+            z-index: 10;
+            text-shadow: 0 1px 1px rgba(255,255,255,0.8);
+        }
+        footer {
+            text-align: center;
+            padding: 15px;
+            font-size: 14px;
+            color: #64748b;
+            background: rgba(255, 255, 255, 0.7);
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            position: relative;
+            z-index: 1;
+        }
+        /* 装饰元素 */
+        .decoration {
+            position: absolute;
+            z-index: 0;
+            opacity: 0.05;
+        }
+        .decoration-1 {
+            top: 20%;
+            right: -50px;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: var(--primary-color);
+        }
+        .decoration-2 {
+            bottom: 30%;
+            left: -70px;
+            width: 250px;
+            height: 250px;
+        }
+        
+        /* 考试列表模态框样式 */
+        .exam-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .exam-item {
+            background: linear-gradient(135deg, #ffffff, #f9fafb);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .exam-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .exam-header {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .exam-title-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .exam-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin: 0;
+        }
+        
+        .exam-id-badge {
+            background-color: rgba(79, 70, 229, 0.1);
+            color: var(--primary-color);
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .exam-teacher-info {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        .exam-details {
+            margin-top: 15px;
+        }
+        
+        .exam-type-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--secondary-color), var(--secondary-dark));
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .exam-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+        
+        .meta-item i {
+            color: var(--primary-color);
+            width: 20px;
+            text-align: center;
+        }
+        
+        .exam-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .no-exams {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+        
+        .no-exams p {
+            margin-top: 15px;
+            font-size: 16px;
+        }
+        
+        /* 考试详情模态框样式 */
+        .exam-detail-container {
+            padding: 10px 0;
+        }
+        
+        .detail-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .detail-header h3 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        
+        .detail-header .exam-id {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        .detail-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .info-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 15px;
+            background-color: #f8fafc;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+        }
+        
+        .info-row:hover {
+            background-color: #f1f5f9;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: var(--text-secondary);
+            min-width: 80px;
+        }
+        
+        .info-value {
+            font-weight: 500;
+            color: var(--text-primary);
+            flex: 1;
+        }
+        
+        @media (max-width: 768px) {
+            .detail-info {
+                grid-template-columns: 1fr;
+            }
+            
+            .exam-meta {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* 状态指示器样式 */
+        .status-indicator {
+            border-radius: 50%;
+            background: var(--success-color);
+        }
+        
+        @media (max-width: 480px) {
+            .main-container {
+                width: 95%;
+            }
+            .header-gradient h1 {
+                font-size: 22px;
+            }
+            .btn-card {
+                padding: 25px 15px;
+            }
+            .btn-icon {
+                width: 80px;
+                height: 80px;
+                font-size: 32px;
+            }
+            .btn-text {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="main-container">
+        <!-- 装饰元素 -->
+        <div class="decoration decoration-1"></div>
+        <div class="decoration decoration-2"></div>
+
+        <div class="header-gradient">
+            <h1><i class="bi bi-lightning-charge me-3"></i>教师端 - 电路配盘接线系统</h1>
+        </div>
+        <div class="status-bar">
+            <div>
+                <span class="status-indicator" :class="connected ? 'status-connected' : 'status-disconnected'"></span>
+                <span v-text="connected ? '已连接服务器' : '在线模式'"></span>
+            </div>
+            <div v-if="teacherInfo">
+                工号：<span v-text="teacherInfo.tno"></span>　|　姓名：<span v-text="teacherInfo.teacher_name"></span>
+            </div>
+        </div>
+        <div class="btn-container">
+            <div class="btn-card btn-light-blue" @click="openCreateExamModal">
+                <div class="btn-icon"><i class="bi bi-plus-circle"></i></div>
+                <div class="btn-text">新增考试</div>
+                <div class="btn-subtext">创建新的考试任务</div>
+            </div>
+            <div class="btn-card btn-success" @click="openViewScoresModal">
+                <div class="btn-icon"><i class="bi bi-bar-chart-line"></i></div>
+                <div class="btn-text">查看学生成绩</div>
+                <div class="btn-subtext">分析和导出考试结果</div>
+            </div>
+            <div class="btn-card btn-warning" @click="openManageStudentsModal">
+                <div class="btn-icon"><i class="bi bi-people-fill"></i></div>
+                <div class="btn-text">管理学生</div>
+                <div class="btn-subtext">添加、编辑和删除学生信息</div>
+            </div>
+            <div class="btn-card btn-danger" @click="toggleRuleServer">
+                <div class="btn-icon"><i class="bi bi-server"></i></div>
+                <div class="btn-text" v-text="ruleServerStatus === 'stopped' ? '开启规则下载服务' : '停止规则下载服务'"></div>
+                <div class="btn-subtext">控制接线规则文件的分发</div>
+            </div>
+            <div class="btn-card btn-info" @click="openApprovalModal">
+                <div class="btn-icon"><i class="bi bi-person-check"></i></div>
+                <div class="btn-text">注册审批</div>
+                <div class="btn-subtext">审批学生或教师的注册请求</div>
+            </div>
+            <div class="btn-card btn-light-cyan" @click="openExamListModal">
+                <div class="btn-icon"><i class="bi bi-file-text"></i></div>
+                <div class="btn-text">查看考试</div>
+                <div class="btn-subtext">查看和管理已创建的考试</div>
+            </div>
+        </div>
+        <footer> 电路配盘接线系统 - 教师端</footer>
+    </div>
+
+    <!-- 新增考试模态框 -->
+    <div class="modal" :style="{display: showCreateExamModal ? 'block' : 'none'}">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">新增考试</h2>
+                <span class="close" @click="closeCreateExamModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="createExamForm" @submit.prevent="submitCreateExam">
+                    <div class="form-group">
+                        <label for="examName">考试名称:</label>
+                        <input type="text" id="examName" v-model="examForm.test_name" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="examType">考试题型:</label>
+                        <select id="examType" v-model="examForm.test_type" class="form-control" required>
+                            <option value="">请选择考试题型</option>
+                            <option value="电机正反转控制电路">电机正反转控制电路</option>
+                            <option value="星三角降压启动电路">星三角降压启动电路</option>
+                            <option value="多地控制电路">多地控制电路</option>
+                            <option value="顺序控制电路">顺序控制电路</option>
+                            <option value="时间控制电路">时间控制电路</option>
+                            <option value="自锁互锁控制电路">自锁互锁控制电路</option>
+                            <option value="双速电机控制电路">双速电机控制电路</option>
+                            <option value="能耗制动控制电路">能耗制动控制电路</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="examDuration">考试时长(分钟):</label>
+                        <input type="number" id="examDuration" v-model="examForm.duration_minutes" class="form-control" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="examStartTime">考试发布时间:</label>
+                        <input type="datetime-local" id="examStartTime" v-model="examForm.publish_time" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="examEndTime">考试截止时间:</label>
+                        <input type="datetime-local" id="examEndTime" v-model="examForm.deadline_time" class="form-control" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modal btn-secondary-modal" @click="closeCreateExamModal">取消</button>
+                <button class="btn-modal btn-primary-modal" @click="submitCreateExam">创建考试</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 查看考试列表模态框 -->
+    <div class="modal" :style="{display: showExamListModal ? 'block' : 'none'}">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">
+                    <i class="bi bi-file-text me-2"></i>我的考试
+                </h2>
+                <div class="modal-actions">
+                    <button class="btn-modal btn-primary-modal me-2" @click="fetchExams">
+                        <i class="bi bi-arrow-clockwise me-1"></i>刷新
+                    </button>
+                    <span class="close" @click="closeExamListModal">&times;</span>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="search-box mb-3">
+                    <i class="bi bi-search"></i>
+                    <input type="text" v-model="examSearchQuery" placeholder="搜索考试名称或类型..." class="search-input">
+                </div>
+                
+                <div class="exam-list">
+                    {% raw %}
+                    <div v-if="filteredExams.length === 0" class="no-exams">
+                        <i class="bi bi-file-text text-gray-300" style="font-size: 80px;"></i>
+                        <p>暂无考试数据</p>
+                    </div>
+                    <div class="exam-item" v-for="exam in filteredExams" :key="exam.id">
+                        <div class="exam-header">
+                            <div class="exam-title-container">
+                                <h3 class="exam-name">{{ exam.test_name }}</h3>
+                                <div class="exam-id-badge">ID: {{ exam.id }}</div>
+                            </div>
+                            <div class="exam-teacher-info">
+                                <i class="bi bi-person-circle me-1"></i>
+                                <span>负责教师: {{ exam.teacher_info?.teacher_name || '未知' }}</span>
+                            </div>
+                        </div>
+                        <div class="exam-details">
+                            <div class="exam-type-badge">{{ exam.test_type }}</div>
+                            <div class="exam-meta">
+                                <div class="meta-item">
+                                    <i class="bi bi-clock"></i>
+                                    <span>考试时长: {{ exam.duration_minutes }}分钟</span>
+                                </div>
+                                <div class="meta-item">
+                                    <i class="bi bi-calendar"></i>
+                                    <span>开始时间: {{ exam.publish_time }}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <i class="bi bi-calendar-check"></i>
+                                    <span>截止时间: {{ exam.deadline_time }}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <i class="bi bi-calendar-plus"></i>
+                                    <span>创建时间: {{ exam.create_time }}</span>
+                                </div>
+                            </div>
+                            <div class="exam-actions">
+                                <button class="btn-action btn-primary" @click="viewExamDetail(exam)">
+                                    <i class="bi bi-eye me-1"></i>查看详情
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endraw %}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="footer-info">
+                    <span class="info-text">共 {% raw %}{{ filteredExams.length }}{% endraw %} 个考试</span>
+                    <span class="info-text">最后更新：{% raw %}{{ lastExamUpdateTime }}{% endraw %}</span>
+                </div>
+                <div class="footer-actions">
+                    <button class="btn-modal btn-secondary-modal" @click="closeExamListModal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 考试详情模态框 -->
+    <div class="modal" :style="{display: showExamDetailModal ? 'block' : 'none'}">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">
+                    <i class="bi bi-file-text-detail me-2"></i>考试详情
+                </h2>
+                <span class="close" @click="closeExamDetailModal">&times;</span>
+            </div>
+            <div class="modal-body" v-if="selectedExam">
+                {% raw %}
+                <div class="exam-detail-container">
+                    <div class="detail-header">
+                        <h3>{{ selectedExam.test_name }}</h3>
+                        <div class="exam-id">ID: {{ selectedExam.id }}</div>
+                    </div>
+                    
+                    <div class="detail-info">
+                        <div class="info-row">
+                            <div class="info-label">考试类型:</div>
+                            <div class="info-value">{{ selectedExam.test_type }}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">负责教师:</div>
+                            <div class="info-value">{{ selectedExam.teacher_info?.teacher_name || '未知' }}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">工号:</div>
+                            <div class="info-value">{{ selectedExam.teacher_info?.tno || '未知' }}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">考试时长:</div>
+                            <div class="info-value">{{ selectedExam.duration_minutes }}分钟</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">开始时间:</div>
+                            <div class="info-value">{{ selectedExam.publish_time }}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">截止时间:</div>
+                            <div class="info-value">{{ selectedExam.deadline_time }}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">创建时间:</div>
+                            <div class="info-value">{{ selectedExam.create_time }}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">更新时间:</div>
+                            <div class="info-value">{{ selectedExam.update_time }}</div>
+                        </div>
+                    </div>
+                </div>
+                {% endraw %}
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modal btn-secondary-modal" @click="closeExamDetailModal">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 查看成绩模态框 -->
+    <div class="modal" :style="{display: showViewScoresModal ? 'block' : 'none'}">
+        <div class="modal-content score-modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">
+                    <i class="bi bi-bar-chart-line me-2"></i>学生成绩分析
+                </h2>
+                <div class="modal-actions">
+                    <button class="btn-modal btn-success-modal me-2" @click="exportScores">
+                        <i class="bi bi-download me-1"></i>导出成绩
+                    </button>
+                    <span class="close" @click="closeViewScoresModal">&times;</span>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="stats-container">
+                    <div class="stat-card">平均分<br>{% raw %}{{ scoreSummary?.average ?? '--' }}{% endraw %}</div>
+                    <div class="stat-card">最高分<br>{% raw %}{{ scoreSummary?.highest ?? '--' }}{% endraw %}</div>
+                    <div class="stat-card">最低分<br>{% raw %}{{ scoreSummary?.lowest ?? '--' }}{% endraw %}</div>
+                    <div class="stat-card">参考人数<br>{% raw %}{{ scoreSummary?.total ?? '--' }}{% endraw %}</div>
+                </div>
+                <div class="chart-container"><canvas id="scoreDistributionChart"></canvas></div>
+                <h3>学生成绩列表</h3>
+                <table class="table table-striped">
+                    <thead><tr><th>姓名</th><th>学号</th><th>考试科目</th><th>成绩</th><th>考试时间</th><th>易错知识点</th></tr></thead>
+                    <tbody>
+                        {% raw %}
+                        <tr v-for="student in studentsScores" :key="student.id">
+                            <td>{{ student.name }}</td>
+                            <td>{{ student.student_id }}</td>
+                            <td>{{ student.subject || '电路配盘接线' }}</td>
+                            <td :class="getScoreClass(student.score)">{{ student.score }}分</td>
+                            <td>{{ student.exam_time || '--' }}</td>
+                            <td>
+                                <span v-for="(point, index) in student.weak_points" :key="index" class="badge bg-warning me-1">
+                                    {{ point }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endraw %}
+                    </tbody>
+                </table>
+                <div class="weak-points">
+                    <h3>易错知识点统计</h3>
+                    <ul>
+                        {% raw %}
+                        <li v-for="p in weakKnowledgePoints" :key="p.point">{{ p.point }} - 错误率: {{ p.errorRate }}%</li>
+                        {% endraw %}
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="footer-info">
+                    <span class="info-text">共 {% raw %}{{ studentsScores.length }}{% endraw %} 名学生</span>
+                    <span class="info-text">最后更新：{% raw %}{{ lastUpdateTime }}{% endraw %}</span>
+                </div>
+                <div class="footer-actions">
+                    <button class="btn-modal btn-secondary-modal" @click="refreshScores">
+                        <i class="bi bi-arrow-clockwise me-1"></i>刷新数据
+                    </button>
+                    <button class="btn-modal btn-secondary-modal" @click="closeViewScoresModal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 管理学生模态框 -->
+    <div class="modal" :style="{display: showManageStudentsModal ? 'block' : 'none'}">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">管理学生</h2>
+                <span class="close" @click="closeManageStudentsModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="student-management">
+                    <!-- 学生列表 -->
+                    <div class="student-list-section">
+                        <h3>学生列表</h3>
+                        <div class="table-container">
+                            <div class="list-controls mb-3">
+                                <div class="sort-controls">
+                                    <label>排序方式:</label>
+                                    <select v-model="studentSortBy" class="sort-select" @change="sortStudents">
+                                        <option value="student_id">按学号排序</option>
+                                        <option value="name">按姓名排序</option>
+                                        <option value="class">按班级排序</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>学号</th>
+                                        <th>姓名</th>
+                                        <th>班级</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% raw %}
+                                    <tr v-for="student in students" :key="student.id">
+                                        <td>{{ student.student_id }}</td>
+                                        <td>{{ student.name }}</td>
+                                        <td>{{ student.class_name || '--' }}</td>
+                                        <td>
+                                            <button class="btn-action btn-edit" @click="editStudent(student)">编辑</button>
+                                            <button class="btn-action btn-delete" @click="deleteStudent(student.id)">删除</button>
+                                        </td>
+                                    </tr>
+                                    {% endraw %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 添加/编辑学生表单 -->
+                    <div class="student-form-section">
+                        <h3>{% raw %}{{ isEditing ? '编辑学生' : '添加学生' }}{% endraw %}</h3>
+                        <form @submit.prevent="saveStudent">
+                            <div class="form-group">
+                                <label for="studentId">学号:</label>
+                                <input type="text" id="studentId" v-model="currentStudent.student_id" class="form-control" required :disabled="isEditing">
+                            </div>
+                            <div class="form-group">
+                                <label for="studentName">姓名:</label>
+                                <input type="text" id="studentName" v-model="currentStudent.name" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="studentClass">班级:</label>
+                                <input type="text" id="studentClass" v-model="currentStudent.class_name" class="form-control" required>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn-modal btn-primary-modal">{% raw %}{{ isEditing ? '更新' : '添加' }}{% endraw %}</button>
+                                <button type="button" class="btn-modal btn-secondary-modal" @click="cancelEdit" v-if="isEditing">取消</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modal btn-secondary-modal" @click="closeManageStudentsModal">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 注册审批模态框 -->
+    <div class="modal" :style="{display: showApprovalModal ? 'block' : 'none'}">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">
+                    <i class="bi bi-person-check me-2"></i>注册审批
+                </h2>
+                <div class="modal-actions">
+                    <button class="btn-modal btn-primary-modal me-2" @click="refreshRegistrationRequests">
+                        <i class="bi bi-arrow-clockwise me-1"></i>刷新
+                    </button>
+                    <span class="close" @click="closeApprovalModal">&times;</span>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="stats-container">
+                    <div class="stat-card">待审批<br>{% raw %}{{ pendingRequestsCount || '--' }}{% endraw %}</div>
+                    <div class="stat-card">已批准<br>{% raw %}{{ approvedRequestsCount || '--' }}{% endraw %}</div>
+                    <div class="stat-card">已拒绝<br>{% raw %}{{ rejectedRequestsCount || '--' }}{% endraw %}</div>
+                </div>
+
+                <div class="section-header">
+                    <h3>待审批请求</h3>
+                    <div class="list-controls">
+                        <div class="search-box">
+                            <i class="bi bi-search"></i>
+                            <input type="text" v-model="approvalSearchQuery" placeholder="搜索用户ID或姓名..." class="search-input">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>用户ID</th>
+                                <th>姓名</th>
+                                <th>用户类型</th>
+                                <th>审批人</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% raw %}
+                            <tr v-for="request in filteredRequests" :key="request.user_id">
+                                <td>{{ request.user_id }}</td>
+                                <td>{{ request.user_name }}</td>
+                                <td>
+                                    <span class="badge" :class="request.user_type === 'student' ? 'bg-info' : 'bg-warning'">
+                                        {{ request.user_type_text }}
+                                    </span>
+                                </td>
+                                <td>{{ request.user_approve }}</td>
+                                <td>
+                                    <button class="btn-action btn-approve me-1" @click="approveRequest(request.user_id)">
+                                        <i class="bi bi-check-circle"></i> 批准
+                                    </button>
+                                    <button class="btn-action btn-reject" @click="rejectRequest(request.user_id)">
+                                        <i class="bi bi-x-circle"></i> 拒绝
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr v-if="filteredRequests.length === 0">
+                                <td colspan="5" style="text-align: center;">暂无待审批请求</td>
+                            </tr>
+                            {% endraw %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="footer-info">
+                    <span class="info-text">共 {% raw %}{{ filteredRequests.length }}{% endraw %} 条待审批请求</span>
+                    <span class="info-text">最后更新：{% raw %}{{ lastApprovalUpdateTime }}{% endraw %}</span>
+                </div>
+                <div class="footer-actions">
+                    <button class="btn-modal btn-secondary-modal" @click="closeApprovalModal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); }
+    .modal-content { background-color: #fff; margin: 5% auto; padding: 30px; border-radius: 16px; width: 90%; max-width: 900px; max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); animation: modalFadeIn 0.4s; border: none; }
+
+    @media (max-width: 768px) {
+        .modal-content {
+            max-width: 500px;
+            padding: 20px;
+        }
+    }
+    .modal-header { padding: 15px 0; margin-bottom: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+    .modal-title { margin: 0; font-size: 20px; font-weight: 700; color: var(--primary-color); }
+    .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; transition: color 0.3s; }
+    .close:hover { color: var(--danger-color); }
+    .modal-body { padding: 10px 0; }
+    .modal-footer { padding: 15px 0; margin-top: 15px; border-top: 1px solid #eee; text-align: right; }
+    .btn-modal { padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
+    .btn-primary-modal { background-color: var(--primary-color); color: white; }
+    .btn-primary-modal:hover { background-color: var(--primary-dark); }
+    .btn-secondary-modal { background-color: #e5e7eb; color: #4b5563; }
+    .btn-secondary-modal:hover { background-color: #d1d5db; }
+    .stats-container { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 15px; margin-bottom: 20px; }
+    .stat-card { flex: 1 1 calc(33.333% - 10px); min-width: 120px; background-color: #f9fafb; border-radius: 12px; padding: 15px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .stat-value { font-size: 24px; font-weight: 700; margin: 5px 0; color: var(--primary-color); }
+    .stat-label { font-size: 14px; color: var(--text-secondary); }
+    .score-list { margin-top: 20px; }
+    .score-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; align-items: center; }
+    .score-name { font-weight: 600; }
+    .score-value { font-weight: 700; padding: 4px 10px; border-radius: 20px; }
+    .score-high { color: var(--success-color); background-color: rgba(16, 185, 129, 0.1); }
+    .score-medium { color: var(--warning-color); background-color: rgba(245, 158, 11, 0.1); }
+    .score-low { color: var(--danger-color); background-color: rgba(239, 68, 68, 0.1); }
+    .chart-container { width: 100%; height: 250px; margin: 20px 0; }
+    @keyframes modalFadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* 成绩模态框增强样式 */
+    .score-modal-content {
+        max-width: 1200px;
+        width: 95%;
+    }
+
+    .modal-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .btn-success-modal {
+        background: linear-gradient(135deg, var(--success-color), var(--success-dark));
+        color: white;
+        box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
+    }
+
+    .btn-success-modal:hover {
+        background: linear-gradient(135deg, var(--success-dark), var(--success-color));
+        transform: translateY(-2px);
+        box-shadow: 0 6px 8px rgba(16, 185, 129, 0.3);
+    }
+
+    .stats-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .stat-card {
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        border-radius: 16px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: white;
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    }
+
+    .stat-content {
+        flex: 1;
+    }
+
+    .stat-label {
+        font-size: 14px;
+        color: var(--text-secondary);
+        margin-bottom: 5px;
+        font-weight: 500;
+    }
+
+    .stat-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+
+    .section-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+    }
+
+    .chart-section {
+        margin: 30px 0;
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 20px;
+    }
+
+    .grade-stats {
+        margin: 30px 0;
+    }
+
+    .grade-bars {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .grade-bar {
+        background: white;
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .grade-label {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .grade-name {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .grade-count {
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+
+    .grade-progress {
+        height: 8px;
+        background: #e5e7eb;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .grade-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.5s ease;
+    }
+
+    .grade-fill.excellent { background: linear-gradient(90deg, #10b981, #059669); }
+    .grade-fill.good { background: linear-gradient(90deg, #3b82f6, #1d4ed8); }
+    .grade-fill.medium { background: linear-gradient(90deg, #f59e0b, #d97706); }
+    .grade-fill.pass { background: linear-gradient(90deg, #8b5cf6, #7c3aed); }
+    .grade-fill.fail { background: linear-gradient(90deg, #ef4444, #dc2626); }
+
+    .score-list-section {
+        margin: 30px 0;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .list-controls {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+    }
+
+    .search-box {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .search-box i {
+        position: absolute;
+        left: 12px;
+        color: var(--text-secondary);
+        z-index: 1;
+    }
+
+    .search-input {
+        padding: 8px 12px 8px 35px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 14px;
+        width: 250px;
+        transition: border-color 0.3s;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    .sort-select {
+        padding: 8px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 14px;
+        background: white;
+        cursor: pointer;
+    }
+
+    .score-table-container {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e5e7eb;
+    }
+
+    .score-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .score-table thead {
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    }
+
+    .score-table th {
+        padding: 15px 12px;
+        text-align: left;
+        font-weight: 600;
+        color: var(--text-primary);
+        border-bottom: 2px solid #e5e7eb;
+        font-size: 14px;
+    }
+
+    .score-table td {
+        padding: 12px;
+        border-bottom: 1px solid #f3f4f6;
+        font-size: 14px;
+    }
+
+    .score-row:hover {
+        background: #f8fafc;
+    }
+
+    .rank-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        font-weight: 700;
+        font-size: 12px;
+        color: white;
+    }
+
+    .rank-badge.rank-1 { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+    .rank-badge.rank-2 { background: linear-gradient(135deg, #9ca3af, #6b7280); }
+    .rank-badge.rank-3 { background: linear-gradient(135deg, #cd7c2f, #a16207); }
+    .rank-badge.rank-other { background: linear-gradient(135deg, #6b7280, #4b5563); }
+
+    .student-name {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .score-value {
+        font-weight: 700;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 13px;
+    }
+
+    .grade-badge {
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .grade-badge.excellent { background: rgba(16, 185, 129, 0.1); color: #059669; }
+    .grade-badge.good { background: rgba(59, 130, 246, 0.1); color: #1d4ed8; }
+    .grade-badge.medium { background: rgba(245, 158, 11, 0.1); color: #d97706; }
+    .grade-badge.pass { background: rgba(139, 92, 246, 0.1); color: #7c3aed; }
+    .grade-badge.fail { background: rgba(239, 68, 68, 0.1); color: #dc2626; }
+
+    .btn-action {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        cursor: pointer;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 14px;
+        transition: all 0.3s;
+        margin: 0 2px;
+    }
+
+    .btn-action:hover {
+        background: #f3f4f6;
+        color: var(--primary-color);
+    }
+
+    .btn-action.btn-approve {
+        background-color: #10b981;
+        color: white;
+        padding: 6px 12px;
+    }
+
+    .btn-action.btn-approve:hover {
+        background-color: #059669;
+        transform: translateY(-1px);
+    }
+
+    .btn-action.btn-reject {
+        background-color: #ef4444;
+        color: white;
+        padding: 6px 12px;
+    }
+
+    .btn-action.btn-reject:hover {
+        background-color: #dc2626;
+        transform: translateY(-1px);
+    }
+
+    .modal-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .footer-info {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+    }
+
+    .info-text {
+        font-size: 14px;
+        color: var(--text-secondary);
+    }
+
+    .footer-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    @media (max-width: 768px) {
+        .score-modal-content {
+            width: 98%;
+            margin: 2% auto;
+        }
+
+        .stats-container {
+            grid-template-columns: 1fr;
+        }
+
+        .section-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .list-controls {
+            width: 100%;
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .search-input {
+            width: 100%;
+        }
+
+        .score-table-container {
+            overflow-x: auto;
+        }
+
+        .score-table {
+            min-width: 600px;
+        }
+
+        .modal-footer {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .footer-info {
+            justify-content: center;
+        }
+    }
+
+    /* 学生管理样式 */
+    .student-management {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+    }
+
+    @media (max-width: 768px) {
+        .student-management {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .student-list-section h3,
+    .student-form-section h3 {
+        margin-bottom: 15px;
+        color: var(--primary-color);
+        font-weight: 600;
+    }
+
+    .table-container {
+        overflow-x: auto;
+    }
+
+    .table th,
+    .table td {
+        vertical-align: middle;
+    }
+
+    .btn-edit {
+        background-color: var(--warning-color);
+        color: white;
+    }
+
+    .btn-edit:hover {
+        background-color: var(--warning-dark);
+    }
+
+    .btn-delete {
+        background-color: var(--danger-color);
+        color: white;
+    }
+
+    .btn-delete:hover {
+        background-color: var(--danger-dark);
+    }
+
+    .student-form-section .form-group {
+        margin-bottom: 15px;
+    }
+
+    .student-form-section .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+    }
+
+    .student-form-section .form-control {
+        padding: 8px 12px;  /* 与通用定义不同的padding值 */
+        border-radius: 6px;  /* 与通用定义不同的border-radius值 */
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .btn-modal {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    .btn-primary-modal {
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+    .btn-primary-modal:hover {
+        background-color: var(--primary-dark);
+    }
+
+    .btn-secondary-modal {
+        background-color: #e5e7eb;
+        color: #4b5563;
+    }
+
+    .btn-secondary-modal:hover {
+        background-color: #d1d5db;
+    }
+
+    /* 新增考试模态框美化样式 */
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 16px;
+        transition: border-color 0.3s, box-shadow 0.3s;
+        background-color: #fff;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .modal-header {
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 15px;
+        margin-bottom: 25px;
+    }
+
+    .modal-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+
+    .modal-footer {
+        border-top: 1px solid #e5e7eb;
+        padding-top: 20px;
+        margin-top: 25px;
+    }
+
+    .btn-modal {
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-primary-modal {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+        box-shadow: 0 4px 6px rgba(79, 70, 229, 0.2);
+    }
+
+    .btn-primary-modal:hover {
+        background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
+        transform: translateY(-2px);
+        box-shadow: 0 6px 8px rgba(79, 70, 229, 0.3);
+    }
+
+    .btn-secondary-modal {
+        background-color: #f3f4f6;
+        color: #4b5563;
+        margin-right: 10px;
+    }
+
+    .btn-secondary-modal:hover {
+        background-color: #e5e7eb;
+        transform: translateY(-2px);
+    }
+
+    .close {
+        color: #9ca3af;
+        font-size: 28px;
+        font-weight: normal;
+        transition: color 0.3s;
+    }
+
+    .close:hover {
+        color: var(--danger-color);
+    }
+
+    /* 表单网格布局 */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    @media (max-width: 768px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<script>
+const { createApp } = Vue;
+const app = createApp({
+    data() {
+        return {
+            connected: false,
+            teacherInfo: null,
+            ruleServerStatus: 'stopped',
+            ruleServerMessage: '',
+            socket: null,
+            // 模态框状态
+            showCreateExamModal: false,
+            showViewScoresModal: false,
+            showManageStudentsModal: false,
+            showExamListModal: false, // 考试列表模态框状态
+            showExamDetailModal: false, // 考试详情模态框状态
+            // 成绩数据
+            scoreSummary: null,
+            studentsScores: [],
+            scoreDistribution: [],
+            gradeStats: {
+                excellent: 0,
+                good: 0,
+                medium: 0,
+                pass: 0,
+                fail: 0
+            },
+            searchQuery: '',
+            sortBy: 'score',
+            lastUpdateTime: '',
+            // 考试数据
+            exams: [],
+            selectedExam: null, // 当前选中的考试
+            examSearchQuery: '', // 考试搜索查询
+            // 考试表单数据
+            examForm: {
+                name: '',
+                description: '',
+                duration: 60,
+                startTime: '',
+                endTime: ''
+            },
+            // 学生管理数据
+            students: [
+                { id: 1, sno: '2024001', name: '张三' },
+                { id: 2, sno: '2024002', name: '李四' },
+                { id: 3, sno: '2024003', name: '王五' },
+                { id: 4, sno: '2024004', name: '赵六' },
+                { id: 5, sno: '2024005', name: '钱七' }
+            ],
+            currentStudent: {
+                id: null,
+                sno: '',
+                name: ''
+            },
+            isEditing: false,
+            nextStudentId: 6,
+            // 注册审批相关数据
+            showApprovalModal: false,
+            registrationRequests: [],
+            approvalSearchQuery: '',
+            pendingRequestsCount: 0,
+            approvedRequestsCount: 0,
+            rejectedRequestsCount: 0,
+            lastApprovalUpdateTime: '',
+            // 考试更新时间
+            lastExamUpdateTime: ''
+        };
+    },
+    computed: {
+        filteredStudents() {
+            let filtered = this.studentsScores;
+
+            // 搜索过滤
+            if (this.searchQuery) {
+                const query = this.searchQuery.toLowerCase();
+                filtered = filtered.filter(student =>
+                    student.name.toLowerCase().includes(query) ||
+                    (student.sno && student.sno.toLowerCase().includes(query))
+                );
+            }
+
+            // 排序
+            filtered.sort((a, b) => {
+                switch (this.sortBy) {
+                    case 'score':
+                        return b.score - a.score;
+                    case 'name':
+                        return a.name.localeCompare(b.name);
+                    case 'time':
+                        return new Date(b.exam_time || 0) - new Date(a.exam_time || 0);
+                    default:
+                        return 0;
+                }
+            });
+
+            return filtered;
+        },
+        // 过滤注册请求
+        filteredRequests() {
+            let filtered = this.registrationRequests;
+
+            // 搜索过滤
+            if (this.approvalSearchQuery) {
+                const query = this.approvalSearchQuery.toLowerCase();
+                filtered = filtered.filter(request =>
+                    request.user_id.toLowerCase().includes(query) ||
+                    request.user_name.toLowerCase().includes(query)
+                );
+            }
+
+            // 按用户类型排序，学生在前，教师在后
+            filtered.sort((a, b) => {
+                if (a.user_type === 'student' && b.user_type !== 'student') {
+                    return -1;
+                }
+                if (a.user_type !== 'student' && b.user_type === 'student') {
+                    return 1;
+                }
+                return 0;
+            });
+
+            return filtered;
+        },
+
+        // 过滤考试列表
+        filteredExams() {
+            let filtered = this.exams;
+
+            // 搜索过滤
+            if (this.examSearchQuery) {
+                const query = this.examSearchQuery.toLowerCase();
+                filtered = filtered.filter(exam =>
+                    (exam.test_name && exam.test_name.toLowerCase().includes(query)) ||
+                    (exam.name && exam.name.toLowerCase().includes(query)) ||
+                    (exam.test_type && exam.test_type.toLowerCase().includes(query))
+                );
+            }
+
+            // 按发布时间排序，最新的在前
+            filtered.sort((a, b) => {
+                const dateA = new Date(a.publish_time || a.startTime || 0);
+                const dateB = new Date(b.publish_time || b.startTime || 0);
+                return dateB - dateA;
+            });
+
+            return filtered;
+        }
+    },
+    methods: {
+        // 修改方法名以避免与data属性冲突
+        openCreateExamModal() {
+            // 显示新增考试模态框
+            this.showCreateExamModal = true;
+            // 初始化表单数据
+            const now = new Date();
+            const tomorrow = new Date(now);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            this.examForm = {
+                test_name: '',
+                test_type: '',
+                duration_minutes: 60,
+                publish_time: this.formatDateTime(now),
+                deadline_time: this.formatDateTime(tomorrow)
+            };
+        },
+        closeCreateExamModal() {
+            // 关闭新增考试模态框
+            this.showCreateExamModal = false;
+            // 重置表单数据
+            this.examForm = {
+                test_name: '',
+                test_type: '',
+                duration_minutes: 60,
+                publish_time: this.formatDateTime(new Date()),
+                deadline_time: this.formatDateTime(new Date(Date.now() + 60 * 60 * 1000))
+            };
+        },
+        submitCreateExam() {
+            // 提交新增考试表单
+            if (!this.examForm.test_name) {
+                alert('请输入考试名称');
+                return;
+            }
+
+            if (!this.examForm.test_type) {
+                alert('请输入考试类型');
+                return;
+            }
+
+            // 发送创建考试请求到后端
+            fetch('/api/create_exam', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(this.examForm)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('考试创建成功！考试ID: ' + data.exam_id);
+                    this.closeCreateExamModal();
+                    // 添加到本地考试列表
+                    this.exams.push({
+                        id: data.exam_id,
+                        ...this.examForm
+                    });
+                    // 可以在这里添加刷新考试列表的逻辑
+                } else {
+                    alert('考试创建失败: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('创建考试失败', error);
+                alert('创建考试失败，请重试');
+            });
+        },
+        formatDateTime(date) {
+            // 格式化日期时间用于datetime-local输入框
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        },
+        openViewScoresModal() {
+            this.showViewScoresModal = true;
+            this.fetchScoreSummary();
+            this.fetchStudentsScores();
+            this.fetchScoreDistribution();
+            this.fetchWeakKnowledgePoints();
+            this.updateLastUpdateTime();
+        },
+        closeViewScoresModal() {
+            this.showViewScoresModal = false;
+        },
+        // 新增显示考试列表的方法
+        openExamListModal() {
+            this.showExamListModal = true;
+            this.fetchExams();
+        },
+        closeExamListModal() {
+            this.showExamListModal = false;
+        },
+        // 查看考试详情
+        viewExamDetail(exam) {
+            this.selectedExam = exam;
+            this.showExamDetailModal = true;
+        },
+        // 关闭考试详情模态框
+        closeExamDetailModal() {
+            this.showExamDetailModal = false;
+            this.selectedExam = null;
+        },
+        fetchExams() {
+            fetch('/api/get_exams')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        this.exams = data.exams || [];
+                        this.updateExamUpdateTime();
+                    } else {
+                        alert('获取考试列表失败: ' + data.message);
+                        console.error('获取考试列表失败:', data.message);
+                        // 使用模拟数据作为备用
+                        this.exams = [
+                            {
+                                id: 'EXAM_001',
+                                test_name: '电机正反转控制电路考试',
+                                test_type: '实操考试',
+                                duration_minutes: 60,
+                                publish_time: '2024-01-15 14:00:00',
+                                deadline_time: '2024-01-15 16:00:00',
+                                create_time: '2024-01-10 09:00:00',
+                                update_time: '2024-01-10 09:00:00',
+                                teacher_info: {
+                                    tno: 'T001',
+                                    teacher_name: '张老师'
+                                }
+                            },
+                            {
+                                id: 'EXAM_002',
+                                test_name: '星三角降压启动电路考试',
+                                test_type: '实操考试',
+                                duration_minutes: 90,
+                                publish_time: '2024-01-20 09:00:00',
+                                deadline_time: '2024-01-20 11:30:00',
+                                create_time: '2024-01-15 15:30:00',
+                                update_time: '2024-01-15 15:30:00',
+                                teacher_info: {
+                                    tno: 'T001',
+                                    teacher_name: '张老师'
+                                }
+                            }
+                        ];
+                    }
+                })
+                .catch(error => {
+                    console.error('获取考试列表失败', error);
+                    alert('获取考试列表失败，请检查网络连接后重试');
+                    // 使用模拟数据作为备用
+                    this.exams = [
+                        {
+                            id: 'EXAM_001',
+                            test_name: '电机正反转控制电路考试',
+                            test_type: '实操考试',
+                            duration_minutes: 60,
+                            publish_time: '2024-01-15 14:00:00',
+                            deadline_time: '2024-01-15 16:00:00',
+                            create_time: '2024-01-10 09:00:00',
+                            update_time: '2024-01-10 09:00:00',
+                            teacher_info: {
+                                tno: 'T001',
+                                teacher_name: '张老师'
+                            }
+                        },
+                        {
+                            id: 'EXAM_002',
+                            test_name: '星三角降压启动电路考试',
+                            test_type: '实操考试',
+                            duration_minutes: 90,
+                            publish_time: '2024-01-20 09:00:00',
+                            deadline_time: '2024-01-20 11:30:00',
+                            create_time: '2024-01-15 15:30:00',
+                            update_time: '2024-01-15 15:30:00',
+                            teacher_info: {
+                                tno: 'T001',
+                                teacher_name: '张老师'
+                            }
+                        }
+                    ];
+                });
+        },
+
+        // 更新考试更新时间
+        updateExamUpdateTime() {
+            this.lastExamUpdateTime = new Date().toLocaleString('zh-CN');
+        },
+        fetchScoreSummary() {
+            fetch('/api/get_score_summary')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        this.scoreSummary = data.summary;
+                        this.updateSummaryDisplay();
+                    } else {
+                        alert('获取成绩统计失败: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('获取成绩统计失败', error);
+                    alert('获取成绩统计失败，请重试');
+                });
+        },
+        fetchStudentsScores() {
+            fetch('/api/get_students_scores')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        this.studentsScores = data.students;
+                        this.calculateGradeStats();
+                    } else {
+                        alert('获取学生成绩失败: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('获取学生成绩失败', error);
+                    alert('获取学生成绩失败，请重试');
+                });
+        },
+        fetchScoreDistribution() {
+            fetch('/api/get_score_distribution')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        this.scoreDistribution = data.distribution;
+                        this.updateDistributionChart();
+                    } else {
+                        alert('获取成绩分布失败: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('获取成绩分布失败', error);
+                    alert('获取成绩分布失败，请重试');
+                });
+        },
+        fetchWeakKnowledgePoints() {
+            // 模拟获取易错知识点数据
+            // 实际项目中应该从后端获取真实数据
+            this.weakKnowledgePoints = [
+                { point: '电机正反转控制电路-互锁原理', errorRate: 85 },
+                { point: '星三角降压启动电路-时间继电器设置', errorRate: 78 },
+                { point: '多地控制电路-按钮连接方式', errorRate: 72 },
+                { point: '顺序控制电路-接触器配合', errorRate: 68 },
+                { point: '时间控制电路-延时范围计算', errorRate: 65 }
+            ];
+        },
+        updateSummaryDisplay() {
+            // 这个方法现在是空的，因为我们直接使用Vue的数据绑定
+            // 之前的实现是手动更新DOM，现在不需要了
+        },
+        updateDistributionChart() {
+            if (this.scoreDistribution && this.scoreDistribution.length > 0) {
+                const ctx = document.getElementById('scoreDistributionChart').getContext('2d');
+                if (this.distributionChart) {
+                    this.distributionChart.destroy();
+                }
+                this.distributionChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: this.scoreDistribution.map(item => item.range),
+                        datasets: [{
+                            label: '学生数量',
+                            data: this.scoreDistribution.map(item => item.count),
+                            backgroundColor: [
+                                'rgba(239, 68, 68, 0.7)',
+                                'rgba(245, 158, 11, 0.7)',
+                                'rgba(16, 185, 129, 0.7)',
+                                'rgba(59, 130, 246, 0.7)',
+                                'rgba(139, 92, 246, 0.7)'
+                            ],
+                            borderColor: [
+                                'rgb(239, 68, 68)',
+                                'rgb(245, 158, 11)',
+                                'rgb(16, 185, 129)',
+                                'rgb(59, 130, 246)',
+                                'rgb(139, 92, 246)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    precision: 0
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            }
+        },
+        getScoreClass(score) {
+            if (score >= 80) return 'score-high';
+            if (score >= 60) return 'score-medium';
+            return 'score-low';
+        },
+        openManageStudentsModal() {
+            this.showManageStudentsModal = true;
+            // 重置表单状态
+            this.cancelEdit();
+        },
+        closeManageStudentsModal() {
+            this.showManageStudentsModal = false;
+        },
+        editStudent(student) {
+            this.currentStudent = { ...student };
+            this.isEditing = true;
+        },
+        deleteStudent(studentId) {
+            if (confirm('确定要删除这个学生吗？')) {
+                this.students = this.students.filter(student => student.id !== studentId);
+                // 如果正在编辑被删除的学生，取消编辑状态
+                if (this.isEditing && this.currentStudent.id === studentId) {
+                    this.cancelEdit();
+                }
+            }
+        },
+        saveStudent() {
+            if (!this.currentStudent.sno || !this.currentStudent.name) {
+                alert('请填写完整的学号和姓名');
+                return;
+            }
+
+            if (this.isEditing) {
+                // 更新现有学生
+                const index = this.students.findIndex(s => s.id === this.currentStudent.id);
+                if (index !== -1) {
+                    this.students.splice(index, 1, { ...this.currentStudent });
+                }
+            } else {
+                // 检查学号是否重复
+                const exists = this.students.some(s => s.sno === this.currentStudent.sno);
+                if (exists) {
+                    alert('该学号已存在，请使用其他学号');
+                    return;
+                }
+                // 添加新学生
+                this.students.push({
+                    id: this.nextStudentId++,
+                    ...this.currentStudent
+                });
+            }
+
+            // 重置表单
+            this.cancelEdit();
+        },
+        cancelEdit() {
+            this.currentStudent = {
+                id: null,
+                sno: '',
+                name: ''
+            };
+            this.isEditing = false;
+        },
+        toggleRuleServer() {
+            const url = this.ruleServerStatus === 'stopped'
+                ? '/api/rule-server/start'
+                : '/api/rule-server/stop';
+            fetch(url, {method:'POST'}).then(r=>r.json()).then(data=>{
+                this.ruleServerStatus = data.status;
+                this.ruleServerMessage = data.message;
+                alert(this.ruleServerStatus === 'running' ? '规则下载服务已启动' : '规则下载服务已停止');
+            });
+        },
+        fetchTeacherInfo() {
+            try {
+                // 首先尝试从URL参数中获取教师信息
+                const urlParams = new URLSearchParams(window.location.search);
+                const teacher_id = urlParams.get('teacher_id');
+                const teacher_name = urlParams.get('teacher_name');
+
+                if (teacher_id && teacher_name) {
+                    // 如果URL参数中有教师信息，直接使用
+                    this.teacherInfo = {
+                        tno: teacher_id,
+                        teacher_name: teacher_name
+                    };
+                    console.log('从URL参数加载教师信息:', this.teacherInfo);
+                } else {
+                    // 如果URL参数中没有，则从API获取
+                    fetch('/api/teacher_info')
+                        .then(response => response.json())
+                        .then(data => {
+                            this.teacherInfo = data;
+                            console.log('从API加载教师信息:', this.teacherInfo);
+                        })
+                        .catch(error => {
+                            console.error('获取教师信息失败:', error);
+                            // 再次尝试从URL参数获取
+                            const urlParams = new URLSearchParams(window.location.search);
+                            const teacher_id = urlParams.get('teacher_id');
+                            const teacher_name = urlParams.get('teacher_name');
+                            if (teacher_id || teacher_name) {
+                                this.teacherInfo = {
+                                    tno: teacher_id || '',
+                                    teacher_name: teacher_name || ''
+                                };
+                            }
+                        });
+                }
+            } catch (error) {
+                console.error('加载教师信息时发生异常:', error);
+                // 尝试直接从URL参数获取
+                const urlParams = new URLSearchParams(window.location.search);
+                const teacher_id = urlParams.get('teacher_id');
+                const teacher_name = urlParams.get('teacher_name');
+                if (teacher_id || teacher_name) {
+                    this.teacherInfo = {
+                        tno: teacher_id || '',
+                        teacher_name: teacher_name || ''
+                    };
+                }
+            }
+        },
+        setupSocket() {
+            this.socket = io();
+            this.socket.on('connection_established', (data) => {
+                this.connected = true;
+            });
+            this.socket.on('disconnect', () => {
+                this.connected = false;
+            });
+        },
+        // 新增的成绩相关方法
+        calculateGradeStats() {
+            this.gradeStats = {
+                excellent: 0,
+                good: 0,
+                medium: 0,
+                pass: 0,
+                fail: 0
+            };
+
+            this.studentsScores.forEach(student => {
+                const score = student.score;
+                if (score >= 90) this.gradeStats.excellent++;
+                else if (score >= 80) this.gradeStats.good++;
+                else if (score >= 70) this.gradeStats.medium++;
+                else if (score >= 60) this.gradeStats.pass++;
+                else this.gradeStats.fail++;
+            });
+        },
+        getGradeText(score) {
+            if (score >= 90) return '优秀';
+            if (score >= 80) return '良好';
+            if (score >= 70) return '中等';
+            if (score >= 60) return '及格';
+            return '不及格';
+        },
+        getGradeClass(score) {
+            if (score >= 90) return 'excellent';
+            if (score >= 80) return 'good';
+            if (score >= 70) return 'medium';
+            if (score >= 60) return 'pass';
+            return 'fail';
+        },
+        getRankClass(rank) {
+            if (rank === 1) return 'rank-1';
+            if (rank === 2) return 'rank-2';
+            if (rank === 3) return 'rank-3';
+            return 'rank-other';
+        },
+        viewStudentDetail(student) {
+            // 查看学生详情功能
+            alert(`查看学生 ${student.name} 的详细成绩信息\n学号: ${student.sno || '--'}\n分数: ${student.score}分\n等级: ${this.getGradeText(student.score)}`);
+        },
+        downloadStudentReport(student) {
+            // 下载学生报告功能
+            alert(`正在下载学生 ${student.name} 的成绩报告...`);
+        },
+        exportScores() {
+            // 导出成绩功能
+            const data = this.studentsScores.map((student, index) => ({
+                排名: index + 1,
+                学号: student.sno || '--',
+                姓名: student.name,
+                分数: student.score,
+                等级: this.getGradeText(student.score),
+                考试时间: student.exam_time || '--',
+                用时: student.duration || '--'
+            }));
+
+            // 创建CSV内容
+            const headers = Object.keys(data[0] || {});
+            const csvContent = [
+                headers.join(','),
+                ...data.map(row => headers.map(header => `"${row[header]}"`).join(','))
+            ].join('\n');
+
+            // 下载文件
+            const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `学生成绩_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        },
+        refreshScores() {
+            this.fetchScoreSummary();
+            this.fetchStudentsScores();
+            this.fetchScoreDistribution();
+            this.updateLastUpdateTime();
+        },
+        updateLastUpdateTime() {
+            this.lastUpdateTime = new Date().toLocaleString('zh-CN');
+        },
+        // 注册审批相关方法
+        openApprovalModal() {
+            this.showApprovalModal = true;
+            this.fetchRegistrationRequests();
+        },
+        closeApprovalModal() {
+            this.showApprovalModal = false;
+        },
+        refreshRegistrationRequests() {
+            this.fetchRegistrationRequests();
+        },
+        fetchRegistrationRequests() {
+            fetch('/api/registration_requests')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        this.registrationRequests = data.requests;
+                        this.pendingRequestsCount = data.total;
+                        this.updateApprovalUpdateTime();
+                    } else {
+                        alert('获取注册请求失败: ' + data.message);
+                        console.error('获取注册请求失败:', data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('获取注册请求失败', error);
+                    alert('获取注册请求失败，请检查网络连接后重试');
+                });
+        },
+        approveRequest(userId) {
+            if (confirm(`确定要批准用户ID为 ${userId} 的注册请求吗？`)) {
+                fetch('/api/approve_registration', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ user_id: userId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('注册请求已成功批准！');
+                        // 从列表中移除已批准的请求
+                        this.registrationRequests = this.registrationRequests.filter(
+                            request => request.user_id !== userId
+                        );
+                        this.pendingRequestsCount = this.registrationRequests.length;
+                        this.approvedRequestsCount++;
+                    } else {
+                        alert('批准注册请求失败: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('批准注册请求失败', error);
+                    alert('批准注册请求失败，请重试');
+                });
+            }
+        },
+        rejectRequest(userId) {
+            const reason = prompt('请输入拒绝该注册请求的原因:', '');
+            if (reason !== null) {
+                fetch('/api/reject_registration', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        reason: reason || '未提供拒绝理由'
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('注册请求已拒绝！');
+                        // 从列表中移除已拒绝的请求
+                        this.registrationRequests = this.registrationRequests.filter(
+                            request => request.user_id !== userId
+                        );
+                        this.pendingRequestsCount = this.registrationRequests.length;
+                        this.rejectedRequestsCount++;
+                    } else {
+                        alert('拒绝注册请求失败: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('拒绝注册请求失败', error);
+                    alert('拒绝注册请求失败，请重试');
+                });
+            }
+        },
+        updateApprovalUpdateTime() {
+            this.lastApprovalUpdateTime = new Date().toLocaleString('zh-CN');
+        }
+    },
+    mounted() {
+        this.fetchTeacherInfo();
+        this.setupSocket();
+    }
+});
+app.mount('#app');
+</script>
+
+    <!-- 考试列表模态框 -->
+    <div class="modal" :style="{display: showExamListModal ? 'block' : 'none'}">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">
+                    <i class="bi bi-file-text me-2"></i>我的考试
+                </h2>
+                <div class="modal-actions">
+                    <button class="btn-modal btn-primary-modal me-2" @click="fetchExams">
+                        <i class="bi bi-arrow-clockwise me-1"></i>刷新
+                    </button>
+                    <span class="close" @click="closeExamListModal">&times;</span>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="section-header">
+                    <h3>考试列表</h3>
+                    <div class="list-controls">
+                        <div class="search-box">
+                            <i class="bi bi-search"></i>
+                            <input type="text" v-model="examSearchQuery" placeholder="搜索考试名称..." class="search-input">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="exam-list-container">
+                    <!-- 响应式表格设计 -->
+                    <div class="exam-items">
+                        {% raw %}
+                        <div class="exam-item" v-for="exam in filteredExams" :key="exam.id">
+                            <div class="exam-header">
+                                <div class="exam-title-container">
+                                    <h3 class="exam-name">{{ exam.test_name || exam.name }}</h3>
+                                    <div class="exam-id-badge">ID: {{ exam.id }}</div>
+                                </div>
+                                <div class="exam-teacher-info">
+                                    <i class="bi bi-person-circle me-1"></i>
+                                    <span>{{ exam.teacher_info?.teacher_name || '未知' }}</span>
+                                </div>
+                            </div>
+                            <div class="exam-details">
+                                <div class="exam-type-badge">{{ exam.test_type || exam.description || '普通考试' }}</div>
+                                <div class="exam-meta">
+                                    <div class="meta-item">
+                                        <i class="bi bi-clock"></i>
+                                        <span>{{ exam.duration || exam.duration_minutes }}分钟</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <i class="bi bi-calendar"></i>
+                                        <span>{{ exam.publish_time || (exam.startTime ? new Date(exam.startTime).toLocaleString('zh-CN') : '--') }}</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <i class="bi bi-calendar-check"></i>
+                                        <span>{{ exam.deadline_time || (exam.endTime ? new Date(exam.endTime).toLocaleString('zh-CN') : '--') }}</span>
+                                    </div>
+                                </div>
+                                <div class="exam-actions">
+                                    <button class="btn-action btn-primary" @click="viewExamDetail(exam)">
+                                        <i class="bi bi-eye me-1"></i>查看详情
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endraw %}
+                    </div>
+                    
+                    <!-- 空状态提示 -->
+                    {% raw %}
+                    <div v-if="filteredExams.length === 0" class="empty-state">
+                        <i class="bi bi-file-earmark-text-slash"></i>
+                        <p>暂无考试数据</p>
+                    </div>
+                    {% endraw %}
+                </div>
+                
+                <!-- 考试列表样式 -->
+                <style>
+                    .exam-list-container {
+                        margin-top: 20px;
+                    }
+                    
+                    .exam-items {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 16px;
+                    }
+                    
+                    .exam-item {
+                        background: white;
+                        border-radius: 12px;
+                        padding: 20px;
+                        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                        transition: transform 0.2s ease, box-shadow 0.2s ease;
+                    }
+                    
+                    .exam-item:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                    }
+                    
+                    .exam-header {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: flex-start;
+                        margin-bottom: 16px;
+                        padding-bottom: 12px;
+                        border-bottom: 1px solid #e2e8f0;
+                    }
+                    
+                    .exam-title-container {
+                        flex: 1;
+                    }
+                    
+                    .exam-name {
+                        font-size: 18px;
+                        font-weight: 700;
+                        color: #1e293b;
+                        margin: 0 0 6px 0;
+                    }
+                    
+                    .exam-id-badge {
+                        display: inline-block;
+                        padding: 2px 8px;
+                        background-color: #e2e8f0;
+                        color: #64748b;
+                        border-radius: 12px;
+                        font-size: 12px;
+                    }
+                    
+                    .exam-teacher-info {
+                        display: flex;
+                        align-items: center;
+                        color: #64748b;
+                        font-size: 14px;
+                        background: #f8fafc;
+                        padding: 6px 12px;
+                        border-radius: 6px;
+                    }
+                    
+                    .exam-details {
+                        display: flex;
+                        align-items: center;
+                        gap: 16px;
+                    }
+                    
+                    .exam-type-badge {
+                        padding: 4px 12px;
+                        background-color: #dbeafe;
+                        color: #1e40af;
+                        border-radius: 16px;
+                        font-size: 14px;
+                        font-weight: 600;
+                    }
+                    
+                    .exam-meta {
+                        flex: 1;
+                        display: flex;
+                        gap: 24px;
+                    }
+                    
+                    .meta-item {
+                        display: flex;
+                        align-items: center;
+                        color: #64748b;
+                        font-size: 14px;
+                    }
+                    
+                    .meta-item i {
+                        margin-right: 6px;
+                        color: #94a3b8;
+                    }
+                    
+                    .exam-actions {
+                        display: flex;
+                        gap: 8px;
+                    }
+                    .btn-primary {
+                        background-color: #3b82f6;
+                        color: white;
+                    }
+                    
+                    .btn-primary:hover {
+                        background-color: #2563eb;
+                    }
+                    
+                    .empty-state {
+                        text-align: center;
+                        padding: 60px 20px;
+                        color: #64748b;
+                    }
+                    
+                    .empty-state i {
+                        font-size: 48px;
+                        margin-bottom: 16px;
+                        color: #cbd5e1;
+                    }
+                    
+                    @media (max-width: 768px) {
+                        .exam-details {
+                            flex-direction: column;
+                            align-items: flex-start;
+                            gap: 12px;
+                        }
+                        
+                        .exam-meta {
+                            flex-direction: column;
+                            gap: 8px;
+                            width: 100%;
+                        }
+                        
+                        .exam-header {
+                            flex-direction: column;
+                            gap: 12px;
+                        }
+                        
+                        .exam-teacher-info {
+                            align-self: flex-start;
+                        }
+                    }
+                </style>
+            </div>
+            <div class="modal-footer">
+                <div class="footer-info">
+                    <span class="info-text">共 {% raw %}{{ filteredExams.length }}{% endraw %} 条考试记录</span>
+                    <span class="info-text">最后更新：{% raw %}{{ lastExamUpdateTime }}{% endraw %}</span>
+                </div>
+                <div class="footer-actions">
+                    <button class="btn-modal btn-secondary-modal" @click="closeExamListModal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 考试详情模态框 -->
+    <div class="modal" :style="{display: showExamDetailModal ? 'block' : 'none'}">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">
+                    <i class="bi bi-file-text me-2"></i>考试详情
+                </h2>
+                <span class="close" @click="closeExamDetailModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                {% raw %}
+                <div v-if="selectedExam" class="exam-detail">
+                    <!-- 考试名称和ID -->
+                    <div class="exam-header-section">
+                        <h3 class="exam-title">{{ selectedExam.test_name || selectedExam.name }}</h3>
+                        <div class="exam-id-badge">ID: {{ selectedExam.id }}</div>
+                    </div>
+
+                    <!-- 教师信息卡片 -->
+                    <div class="teacher-info-card">
+                        <div class="card-icon">
+                            <i class="bi bi-person-circle"></i>
+                        </div>
+                        <div class="card-content">
+                            <h4>负责教师</h4>
+                            <div class="teacher-details">
+                                <div class="teacher-name">{{ selectedExam.teacher_info?.teacher_name || '未知' }}</div>
+                                <div class="teacher-tno">工号: {{ selectedExam.teacher_info?.tno || '未知' }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 考试基本信息 -->
+                    <div class="exam-info-section">
+                        <h4 class="section-title">考试信息</h4>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">考试类型</span>
+                                <span class="info-value">{{ selectedExam.test_type || selectedExam.description || '普通考试' }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">考试时长</span>
+                                <span class="info-value">{{ selectedExam.duration || selectedExam.duration_minutes }}分钟</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">发布时间</span>
+                                <span class="info-value">{{ selectedExam.publish_time || (selectedExam.startTime ? new Date(selectedExam.startTime).toLocaleString('zh-CN') : '--') }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">截止时间</span>
+                                <span class="info-value">{{ selectedExam.deadline_time || (selectedExam.endTime ? new Date(selectedExam.endTime).toLocaleString('zh-CN') : '--') }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">创建时间</span>
+                                <span class="info-value">{{ selectedExam.create_time ? new Date(selectedExam.create_time).toLocaleString('zh-CN') : '--' }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">更新时间</span>
+                                <span class="info-value">{{ selectedExam.update_time ? new Date(selectedExam.update_time).toLocaleString('zh-CN') : '--' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endraw %}
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modal btn-secondary-modal" @click="closeExamDetailModal">关闭</button>
+            </div>
+        </div>
+    </div>
+
+<style>
+    /* 考试详情样式 */
+    .exam-detail {
+        margin-top: 20px;
+    }
+
+    /* 考试头部样式 */
+    .exam-header-section {
+        text-align: center;
+        margin-bottom: 25px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    .exam-title {
+        font-size: 24px;
+        color: #1e293b;
+        margin-bottom: 8px;
+        font-weight: 700;
+    }
+    .exam-id-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        background-color: #e2e8f0;
+        color: #64748b;
+        border-radius: 20px;
+        font-size: 14px;
+    }
+
+    /* 教师信息卡片样式 */
+    .teacher-info-card {
+        display: flex;
+        align-items: center;
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    .card-icon {
+        font-size: 48px;
+        color: #0ea5e9;
+        margin-right: 20px;
+    }
+    .card-content h4 {
+        color: #0369a1;
+        margin-bottom: 8px;
+        font-size: 16px;
+        font-weight: 600;
+    }
+    .teacher-name {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 4px;
+    }
+    .teacher-tno {
+        color: #64748b;
+        font-size: 14px;
+    }
+
+    /* 考试信息区块样式 */
+    .exam-info-section {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    }
+    .section-title {
+        color: #1e293b;
+        margin-bottom: 20px;
+        font-size: 18px;
+        font-weight: 600;
+    }
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        padding: 16px;
+        background: #f8fafc;
+        border-radius: 8px;
+        border-left: 4px solid #3b82f6;
+        transition: all 0.2s ease;
+    }
+    .info-item:hover {
+        background: #f1f5f9;
+        transform: translateY(-1px);
+    }
+    .info-label {
+        font-size: 14px;
+        color: #64748b;
+        margin-bottom: 6px;
+        font-weight: 500;
+    }
+    .info-value {
+        font-size: 16px;
+        font-weight: 700;
+        color: #1e293b;
+    }
+    
+    @media (max-width: 768px) {
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+        .teacher-info-card {
+            flex-direction: column;
+            text-align: center;
+        }
+        .card-icon {
+            margin-right: 0;
+            margin-bottom: 15px;
+        }
+        .exam-title {
+            font-size: 20px;
+        }
+    }
+</style>
+</body>
+</html>

@@ -1,0 +1,122 @@
+[
+  {
+    "id": 1,
+    "nodes": ["L1", "QS1-1"],
+    "score": 10
+  },
+  {
+    "id": 2,
+    "nodes": ["L2", "QS1-3"],
+    "score": 10
+  },
+  {
+    "id": 3,
+    "nodes": ["L3", "QS1-5"],
+    "score": 10
+  },
+  {
+    "id": 4,
+    "nodes": ["PLC-N", "QS1-7"],
+    "score": 10
+  },
+  {
+    "id": 5,
+    "nodes": ["QS1-2", "FU1-1"],
+    "score": 10
+  },
+  {
+    "id": 6,
+    "nodes": ["QS1-4", "FU1-3"],
+    "score": 10
+  },
+  {
+    "id": 7,
+    "nodes": ["QS1-6", "FU5"],
+    "score": 10
+  },
+  {
+    "id": 8,
+    "nodes": ["FU1-2", "KM1-1/L1"],
+    "score": 10
+  },
+  {
+    "id": 9,
+    "nodes": ["FU1-4", "KM1-3/L2"],
+    "score": 10
+  },
+  {
+    "id": 10,
+    "nodes": ["FU1-6", "KM1-5/L3"],
+    "score": 10
+  },
+  {
+    "id": 11,
+    "nodes": ["KM1-2/T1", "FR1-1/L1"],
+    "score": 10
+  },
+  {
+    "id": 12,
+    "nodes": ["FU1-2", "FR1-1/L1"],
+    "score": 10
+  },
+  {
+    "id": 13,
+    "nodes": ["FU1-4", "FR1-3/L2"],
+    "score": 10
+  },
+  {
+    "id": 14,
+    "nodes": ["FU1-6", "FR1-5/L3"],
+    "score": 10
+  },
+  {
+    "id": 15,
+    "nodes": ["FR1-2/T1", "XT1-1"],
+    "score": 10
+  },
+  {
+    "id": 16,
+    "nodes": ["FR1-4/T2", "XT1-2"],
+    "score": 10
+  },
+  {
+    "id": 17,
+    "nodes": ["FR1-6/T3", "XT1-3"],
+    "score": 10
+  },
+  {
+    "id": 18,
+    "nodes": ["QS1-1", "FU2-1"],
+    "score": 10
+  },
+  {
+    "id": 19,
+    "nodes": ["FU2-2", "FR1-96/NC"],
+    "score": 10
+  },
+  {
+    "id": 20,
+    "nodes": ["FR1-95/NC", "SB1-3"],
+    "score": 10
+  },
+  {
+    "id": 21,
+    "nodes": ["SB1-4", "KM1-A1"],
+    "score": 10
+  },
+  {
+    "id": 22,
+    "nodes": ["KM1-A2", "QS1-8"],
+    "score": 10
+  },
+  {
+    "id": 23,
+    "nodes": ["SB1-3", "KM1-53/NO"],
+    "score": 10
+  },
+  {
+    "id": 24,
+    "nodes": ["SB2-4", "KM1-54/NO"],
+    "score": 10
+  }
+]

@@ -1,0 +1,34 @@
+2025-11-27 14:36:54,009 - LoginInterface - INFO - 使用eventlet作为SocketIO异步引擎
+2025-11-27 14:36:54,032 - LoginInterface - INFO - 登录检查模块导入成功
+2025-11-27 14:36:54,036 - LoginInterface - INFO - 电路配盘接线系统 - 统一登录界面 启动中...
+2025-11-27 14:36:54,036 - LoginInterface - INFO - 启动时间: 2025-11-27 14:36:54
+2025-11-27 14:36:54,036 - LoginInterface - INFO - 服务将在 http://localhost:5000 启动
+2025-11-27 14:36:56,401 - LoginInterface - INFO - 用户访问登录页面
+2025-11-27 14:36:56,402 - login_interface_backup - ERROR - Exception on /login_page [GET]
+Traceback (most recent call last):
+  File "C:\Users\Administrator\miniconda3\envs\videoProject\lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\Administrator\miniconda3\envs\videoProject\lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\Administrator\miniconda3\envs\videoProject\lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\Administrator\miniconda3\envs\videoProject\lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "C:\Users\Administrator\Desktop\videoProject\ui\login\login_interface_backup.py", line 65, in login_page
+    return render_template('login_1.html')
+  File "C:\Users\Administrator\miniconda3\envs\videoProject\lib\site-packages\flask\templating.py", line 149, in render_template
+    template = app.jinja_env.get_or_select_template(template_name_or_list)
+  File "C:\Users\Administrator\miniconda3\envs\videoProject\lib\site-packages\jinja2\environment.py", line 1087, in get_or_select_template
+    return self.get_template(template_name_or_list, parent, globals)
+  File "C:\Users\Administrator\miniconda3\envs\videoProject\lib\site-packages\jinja2\environment.py", line 1016, in get_template
+    return self._load_template(name, globals)
+  File "C:\Users\Administrator\miniconda3\envs\videoProject\lib\site-packages\jinja2\environment.py", line 975, in _load_template
+    template = self.loader.load(self, name, self.make_globals(globals))
+  File "C:\Users\Administrator\miniconda3\envs\videoProject\lib\site-packages\jinja2\loaders.py", line 126, in load
+    source, filename, uptodate = self.get_source(environment, name)
+  File "C:\Users\Administrator\miniconda3\envs\videoProject\lib\site-packages\flask\templating.py", line 65, in get_source
+    return self._get_source_fast(environment, template)
+  File "C:\Users\Administrator\miniconda3\envs\videoProject\lib\site-packages\flask\templating.py", line 99, in _get_source_fast
+    raise TemplateNotFound(template)
+jinja2.exceptions.TemplateNotFound: login_1.html
+2025-11-27 14:36:56,405 - LoginInterface - ERROR - 服务器内部错误: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.

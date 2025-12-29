@@ -1,0 +1,17 @@
+2025-10-11 08:45:57,634 - LoginInterface - INFO - 使用eventlet作为SocketIO异步引擎
+2025-10-11 08:45:57,681 - LoginInterface - INFO - 登录检查模块导入成功
+2025-10-11 08:45:57,685 - LoginInterface - INFO - 电路配盘接线系统 - 统一登录界面 启动中...
+2025-10-11 08:45:57,685 - LoginInterface - INFO - 启动时间: 2025-10-11 08:45:57
+2025-10-11 08:45:57,685 - LoginInterface - INFO - 服务将在 http://localhost:5000 启动
+2025-10-11 08:49:09,550 - LoginInterface - INFO - 用户访问登录页面
+2025-10-11 08:49:09,891 - LoginInterface - WARNING - 页面未找到: /favicon.ico
+2025-10-11 08:49:14,726 - LoginInterface - INFO - 接收到登录请求: 用户名=123, 身份=student
+2025-10-11 08:49:14,726 - LoginCheck - INFO - 执行学生登录查询: SELECT sno, student_password, name FROM student WHERE student_id = %s, 参数: 123
+2025-10-11 08:49:14,792 - LoginInterface - WARNING - 用户登录失败: 123, 原因: 学号不存在
+2025-10-11 08:49:21,903 - LoginInterface - INFO - 接收到登录请求: 用户名=20251001, 身份=student
+2025-10-11 08:49:21,904 - LoginCheck - INFO - 执行学生登录查询: SELECT sno, student_password, name FROM student WHERE student_id = %s, 参数: 20251001
+2025-10-11 08:49:21,918 - LoginInterface - WARNING - 用户登录失败: 20251001, 原因: 学号不存在
+2025-10-11 08:50:23,062 - LoginInterface - INFO - 接收到登录请求: 用户名=20251001, 身份=student
+2025-10-11 08:50:23,063 - LoginCheck - INFO - 执行学生登录查询: SELECT sno, student_password, name FROM student WHERE student_id = %s, 参数: 20251001
+2025-10-11 08:50:23,078 - LoginInterface - WARNING - 用户登录失败: 20251001, 原因: 学号不存在
+2025-10-11 08:51:35,585 - LoginInterface - INFO - 服务已停止

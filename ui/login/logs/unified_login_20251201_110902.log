@@ -1,0 +1,7 @@
+2025-12-01 11:09:02,682 - INFO - 登录检查模块导入成功
+2025-12-01 11:09:02,684 - INFO - ✅ 启动统一登录服务（账号密码 + 人脸识别）
+2025-12-01 11:09:02,692 - INFO - 访问地址: http://localhost:5000/login_page
+2025-12-01 11:09:30,077 - INFO - 执行学生登录查询: SELECT sno, student_password, name FROM student WHERE sno = %s, 参数: 20252001
+2025-12-01 11:09:38,415 - INFO - 执行学生登录查询: SELECT sno, student_password, name FROM student WHERE sno = %s, 参数: 20251001
+2025-12-02 15:36:05,051 - INFO - 执行学生登录查询: SELECT sno, student_password, name FROM student WHERE sno = %s, 参数: 20251001
+2025-12-02 15:36:05,052 - ERROR - 数据库查询错误：local variable 'cursor' referenced before assignment

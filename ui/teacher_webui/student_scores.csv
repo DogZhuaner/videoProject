@@ -1,0 +1,16 @@
+Rank,sno,Name,Score,Grade,Exam_Time,Duration
+1,2024005,Qian Qi,95,Excellent,2024-01-15 14:50:00,35min
+2,2024012,Liu Shisi,94,Excellent,2024-01-15 15:25:00,36min
+3,2024002,Li Si,92,Excellent,2024-01-15 14:35:00,38min
+4,2024009,Zheng Shiyi,91,Excellent,2024-01-15 15:10:00,39min
+5,2024007,Zhou Jiu,89,Good,2024-01-15 15:00:00,43min
+6,2024004,Zhao Liu,88,Good,2024-01-15 14:45:00,41min
+7,2024015,He Shiqi,87,Good,2024-01-15 15:40:00,42min
+8,2024001,Zhang San,85,Good,2024-01-15 14:30:00,45min
+9,2024010,Wang Shier,83,Good,2024-01-15 15:15:00,46min
+10,2024013,Huang Shiwu,81,Good,2024-01-15 15:30:00,44min
+11,2024003,Wang Wu,78,Medium,2024-01-15 14:40:00,52min
+12,2024008,Wu Shi,76,Medium,2024-01-15 15:05:00,50min
+13,2024014,Lin Shiliu,73,Medium,2024-01-15 15:35:00,49min
+14,2024006,Sun Ba,72,Medium,2024-01-15 14:55:00,48min
+15,2024011,Chen Shisan,67,Pass,2024-01-15 15:20:00,55min

@@ -1,0 +1,11 @@
+2025-11-26 09:24:16,262 - INFO - 登录检查模块导入成功
+2025-11-26 09:24:16,263 - INFO - 登录检查模块导入成功
+2025-11-26 09:24:16,264 - INFO - ✅ 启动统一登录服务（账号密码 + 人脸识别）
+2025-11-26 09:24:16,265 - INFO - 访问地址: http://localhost:5000/login_page
+2025-11-26 09:24:16,265 - INFO - ✅ 启动统一登录服务（账号密码 + 人脸识别）
+2025-11-26 09:24:16,265 - INFO - 访问地址: http://localhost:5000/login_page
+2025-11-26 09:24:26,208 - INFO - 执行学生登录查询: SELECT sno, student_password, name FROM student WHERE sno = %s, 参数: 20251001
+2025-11-26 09:24:47,954 - INFO - 执行教师登录查询: SELECT tno, teacher_password, name FROM teacher WHERE tno = %s, 参数: 20252001
+2025-11-26 09:25:15,769 - INFO - 执行教师登录查询: SELECT tno, teacher_password, name FROM teacher WHERE tno = %s, 参数: 20252001
+2025-11-26 09:25:52,058 - INFO - 执行教师登录查询: SELECT tno, teacher_password, name FROM teacher WHERE tno = %s, 参数: 20252001
+2025-11-26 09:26:17,622 - INFO - 执行教师登录查询: SELECT tno, teacher_password, name FROM teacher WHERE tno = %s, 参数: 20252001

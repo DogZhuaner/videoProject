@@ -1,0 +1,54 @@
+{
+  "history": [
+    {
+      "timestamp": 1753433522.3548481,
+      "new_pairs": [
+        [
+          "INV-W2",
+          "PLC-7"
+        ]
+      ],
+      "removed_pairs": [],
+      "new_score": 10,
+      "removed_score": 0,
+      "score_change": 10,
+      "current_score": 10
+    },
+    {
+      "timestamp": 1753690474.029271,
+      "new_pairs": [
+        [
+          "INV-W2",
+          "PLC-7"
+        ]
+      ],
+      "removed_pairs": [],
+      "new_score": 10,
+      "removed_score": 0,
+      "score_change": 10,
+      "current_score": 10
+    },
+    {
+      "timestamp": 1753946916.8397975,
+      "new_pairs": [
+        [
+          "PLC-7",
+          "INV-W2"
+        ]
+      ],
+      "removed_pairs": [],
+      "new_score": 10,
+      "removed_score": 0,
+      "score_change": 10,
+      "current_score": 10
+    }
+  ],
+  "current_pairs": [
+    [
+      "PLC-7",
+      "INV-W2"
+    ]
+  ],
+  "current_score": 10,
+  "total_score": 0
+}

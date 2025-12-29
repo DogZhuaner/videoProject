@@ -1,0 +1,6 @@
+2025-10-13 20:30:27,961 - INFO - 登录检查模块导入成功
+2025-10-13 20:30:27,963 - INFO - ✅ 启动统一登录服务（账号密码 + 人脸识别）
+2025-10-13 20:30:27,963 - INFO - 访问地址: http://localhost:5000/login_page
+2025-10-13 20:30:40,647 - WARNING - From C:\Users\98309\anaconda3\envs\video2.0\lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-10-13 20:30:42,909 - WARNING - 比对 20251001.JPG 出错: can only concatenate str (not "dict") to str

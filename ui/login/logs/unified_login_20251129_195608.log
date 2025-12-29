@@ -1,0 +1,15 @@
+2025-11-29 19:56:08,769 - INFO - 登录检查模块导入成功
+2025-11-29 19:56:08,771 - INFO - ✅ 启动统一登录服务（账号密码 + 人脸识别）
+2025-11-29 19:56:08,771 - INFO - 访问地址: http://localhost:5000/login_page
+2025-11-29 19:56:29,378 - INFO - 执行教师登录查询: SELECT tno, teacher_password, name FROM teacher WHERE tno = %s, 参数: 20252001
+2025-11-29 19:58:41,609 - INFO - 接收到注册请求: 用户ID=20251008, 姓名=程同学, 身份=student
+2025-11-29 19:58:41,632 - INFO - 用户注册成功: 20251008
+2025-11-29 19:59:07,402 - INFO - 接收到注册请求: 用户ID=20251009, 姓名=赵同学, 身份=student
+2025-11-29 19:59:07,429 - INFO - 用户注册成功: 20251009
+2025-11-29 19:59:47,454 - INFO - 接收到注册请求: 用户ID=20252003, 姓名=李老师, 身份=teacher
+2025-11-29 19:59:47,478 - INFO - 用户注册成功: 20252003
+2025-11-29 20:02:28,866 - INFO - 接收到注册请求: 用户ID=20252004, 姓名=李老师, 身份=teacher
+2025-11-29 20:02:28,890 - INFO - 用户注册成功: 20252004
+2025-11-29 20:10:29,366 - INFO - 执行学生登录查询: SELECT sno, student_password, name FROM student WHERE sno = %s, 参数: 20252001
+2025-11-29 20:10:37,215 - INFO - 执行学生登录查询: SELECT sno, student_password, name FROM student WHERE sno = %s, 参数: 20251004
+2025-11-29 20:36:06,468 - INFO - 执行学生登录查询: SELECT sno, student_password, name FROM student WHERE sno = %s, 参数: 20251004
