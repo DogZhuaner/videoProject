@@ -26,7 +26,7 @@ class Global_Config:
     # 全局分数管理
     flag=0        #判断标志
     #总分
-    total_score = []
+    total_score = 0
     #当前接线分数
     current_wired_score = 0
     wired_status = ""

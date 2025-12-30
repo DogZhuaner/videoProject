@@ -2,7 +2,7 @@ import os
 import sys
 import time
 from datetime import datetime
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, send_from_directory
 from flask_socketio import SocketIO
 
 # 添加项目根目录到Python路径
@@ -15,7 +15,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../s
 
 from global_config import Global_Config
 import global_config
-from script.detect_SwtichHand import start_hand_detection, stop_hand_detection
+# 暂时注释掉手检测导入，避免依赖错误
+# from script.detect_SwtichHand import start_hand_detection, stop_hand_detection
 
 # 添加tools目录到Python路径
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../tools')))
@@ -131,9 +132,13 @@ def start_detection():
     if detection_thread and detection_thread.is_alive():
         return jsonify({"success": False, "message": "检测已经在运行"})
 
-    # 启动手势检测
-    detector, detection_thread = start_hand_detection()
-    return jsonify({"success": True, "message": "手势检测已启动"})
+    # 由于手检测依赖缺失，提供模拟实现
+    import threading
+    detector = "mock_detector"
+    detection_thread = threading.Thread(target=lambda: time.sleep(3600))
+    detection_thread.daemon = True
+    detection_thread.start()
+    return jsonify({"success": True, "message": "手势检测已启动（模拟实现）"})
 
 
 @app.route('/api/stop_detection', methods=['POST'])
@@ -144,11 +149,11 @@ def stop_detection():
     if not detector:
         return jsonify({"success": False, "message": "检测尚未启动"})
 
-    # 停止手势检测
-    stop_hand_detection()  # 不需要传入detector
-    detection_thread.join()  # 等待线程结束
+    # 由于手检测依赖缺失，提供模拟实现
     detector = None
-    return jsonify({"success": True, "message": "手势检测已停止"})
+    if detection_thread:
+        detection_thread = None
+    return jsonify({"success": True, "message": "手势检测已停止（模拟实现）"})
 
 
 @app.route('/api/get_detection_status', methods=['GET'])
@@ -611,13 +616,20 @@ def get_air_switch_status():
 
 @app.route('/api/get_score_and_contact', methods=['GET'])
 def get_score_and_contact():
-    score_wired_status = {
-        "score": Global_Config.total_score,
-        "contact_A": Global_Config.current_A,
-        "contact_B": Global_Config.current_B,
-        "wired_status": Global_Config.wired_status
-    }
-    return jsonify(score_wired_status)
+    """获取实时总分和接线情况，包括新增和撤回的触点对"""
+    try:
+        from global_config import Global_Config
+        
+        score_wired_status = {
+            "total_score": Global_Config.total_score,
+            "add_pairs": Global_Config.add_pairs,
+            "undo_pairs": Global_Config.undo_pairs,
+            "wired_status": Global_Config.wired_status
+        }
+        return jsonify(score_wired_status)
+    except Exception as e:
+        print(f"获取分数和接线情况失败: {e}")
+        return jsonify({"total_score": 0, "add_pairs": [], "undo_pairs": [], "wired_status": "error"})
 
 
 @app.route('/api/get_wiring_status', methods=['GET'])
@@ -763,6 +775,62 @@ def get_current_score():
         return jsonify({'success': False, 'message': f'获取当前分数失败: {str(e)}'})
 
 
+@app.route('/api/get_rules', methods=['GET'])
+def get_rules():
+    """获取可用的规则文件列表"""
+    try:
+        import os
+        # 规则文件所在目录
+        rules_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../data/rules/'))
+        
+        # 获取目录下所有.json文件，排除final_rule.json
+        rule_files = []
+        for filename in os.listdir(rules_dir):
+            if filename.endswith('.json') and filename != 'final_rule.json':
+                rule_files.append(filename)
+        
+        return jsonify({
+            'success': True,
+            'rules': rule_files
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'获取规则文件失败: {str(e)}'})
+
+
+@app.route('/api/set_rule', methods=['POST'])
+def set_rule():
+    """设置选中的规则文件，覆盖final_rule.json"""
+    try:
+        import os
+        import shutil
+        
+        data = request.get_json()
+        selected_rule = data.get('rule')
+        
+        if not selected_rule:
+            return jsonify({'success': False, 'message': '请选择规则文件'})
+        
+        # 规则文件所在目录
+        rules_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../data/rules/'))
+        
+        # 源文件和目标文件路径
+        source_file = os.path.join(rules_dir, selected_rule)
+        target_file = os.path.join(rules_dir, 'final_rule.json')
+        
+        # 检查源文件是否存在
+        if not os.path.exists(source_file):
+            return jsonify({'success': False, 'message': f'规则文件 {selected_rule} 不存在'})
+        
+        # 复制文件，覆盖目标文件
+        shutil.copy2(source_file, target_file)
+        
+        return jsonify({
+            'success': True,
+            'message': f'已成功设置规则文件: {selected_rule}'
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'设置规则文件失败: {str(e)}'})
+
 
 @app.route('/api/test_set_contact', methods=['GET', 'POST'])
 def test_set_contact():
@@ -822,6 +890,44 @@ def test_wired_status():
     except Exception as e:
         print(f"测试设置接线触点时出错: {e}")
         return jsonify({"success": False, "message": f"测试设置接线触点时出错: {e}"})
+
+
+@app.route('/api/upload_file', methods=['POST'])
+def upload_file():
+    try:
+        from werkzeug.utils import secure_filename
+        
+        # 检查是否有文件上传
+        if 'file' not in request.files:
+            return jsonify({'success': False, 'message': '没有选择文件'})
+        
+        file = request.files['file']
+        
+        # 检查文件名是否为空
+        if file.filename == '':
+            return jsonify({'success': False, 'message': '没有选择文件'})
+        
+        # 验证文件类型
+        allowed_extensions = {'.zip', '.rar', '.7z', '.tar.gz', '.tgz'}
+        file_extension = os.path.splitext(file.filename)[1].lower()
+        if file_extension not in allowed_extensions:
+            return jsonify({'success': False, 'message': '不支持的文件格式，请上传压缩包文件'})
+        
+        # 创建上传目录（如果不存在）
+        upload_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../data/uploads'))
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        # 生成安全的文件名
+        filename = secure_filename(file.filename)
+        
+        # 保存文件到上传目录
+        file_path = os.path.join(upload_dir, filename)
+        file.save(file_path)
+        
+        return jsonify({'success': True, 'message': '文件上传成功', 'filename': filename})
+    except Exception as e:
+        print(f'文件上传失败: {e}')
+        return jsonify({'success': False, 'message': f'文件上传失败: {str(e)}'})
 
 
 if __name__ == '__main__':

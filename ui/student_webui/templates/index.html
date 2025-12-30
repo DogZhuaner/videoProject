@@ -669,6 +669,54 @@
                                     </div>
                                 </div>
 
+                                <!-- 考试规则选择 -->
+                                <div class="mb-4" data-aos="fade-up" data-aos-delay="650">
+                                    <label class="form-label text-muted">
+                                        <i class="bi bi-list-ul me-2"></i>
+                                        选择考试规则
+                                    </label>
+                                    <select v-model="selectedRule" class="form-select" @change="confirmRuleSelection">
+                                        <option value="">-- 请选择规则文件 --</option>
+                                        <option v-for="rule in availableRules" :value="rule">{{ rule }}</option>
+                                    </select>
+                                </div>
+
+                                <!-- 服务器URL输入 -->
+                                <div class="mb-4" data-aos="fade-up" data-aos-delay="700">
+                                    <label class="form-label text-muted">
+                                        <i class="bi bi-server me-2"></i>
+                                        上传服务器URL
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">http://</span>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               v-model="uploadServerUrl"
+                                               placeholder="服务器地址:端口">
+                                    </div>
+                                    <div class="form-text">
+                                        请输入文件上传的目标服务器地址
+                                    </div>
+                                </div>
+                                
+                                <!-- 文件上传 -->
+                                <div class="mb-4" data-aos="fade-up" data-aos-delay="750">
+                                    <label class="form-label text-muted">
+                                        <i class="bi bi-file-arrow-up me-2"></i>
+                                        上传文件（支持压缩包）
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="file" 
+                                               class="form-control" 
+                                               id="fileUpload" 
+                                               accept=".zip,.rar,.7z,.tar.gz,.tgz" 
+                                               @change="handleFileUpload">
+                                    </div>
+                                    <div class="form-text">
+                                        支持的格式：.zip, .rar, .7z, .tar.gz, .tgz
+                                    </div>
+                                </div>
+
                                 <!-- 实时接线触点显示 -->
                                 <div class="mb-4" data-aos="fade-up" data-aos-delay="700">
                                     <h6 class="text-muted mb-2">
@@ -812,6 +860,87 @@
                                                 <td colspan="5" class="text-center text-muted py-4">
                                                     <i class="bi bi-inbox display-4 d-block mb-3"></i>
                                                     暂无接线记录
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 接线历史记录 -->
+                        <div class="card card-custom mb-4" data-aos="fade-left" data-aos-delay="600">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-clock-history me-2"></i>
+                                    接线历史记录
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <!-- 新增接线表格 -->
+                                <h6 class="text-success mb-3">
+                                    <i class="bi bi-plus-circle me-2"></i>
+                                    新增接线
+                                </h6>
+                                <div class="table-responsive mb-4">
+                                    <table class="table table-custom">
+                                        <thead>
+                                            <tr>
+                                                <th>序号</th>
+                                                <th>触点1</th>
+                                                <th>触点2</th>
+                                                <th>得分</th>
+                                                <th>时间</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="(pair, index) in addPairs" :key="'add-' + index">
+                                                <td>{{ index + 1 }}</td>
+                                                <td>{{ pair.contact1 }}</td>
+                                                <td>{{ pair.contact2 }}</td>
+                                                <td>
+                                                    <span class="badge bg-success">+{{ pair.score || 0 }}分</span>
+                                                </td>
+                                                <td>{{ pair.timestamp || new Date().toLocaleString() }}</td>
+                                            </tr>
+                                            <tr v-if="addPairs.length === 0">
+                                                <td colspan="5" class="text-center text-muted py-4">
+                                                    暂无新增接线记录
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <!-- 拆除接线表格 -->
+                                <h6 class="text-warning mb-3">
+                                    <i class="bi bi-dash-circle me-2"></i>
+                                    拆除接线
+                                </h6>
+                                <div class="table-responsive">
+                                    <table class="table table-custom">
+                                        <thead>
+                                            <tr>
+                                                <th>序号</th>
+                                                <th>触点1</th>
+                                                <th>触点2</th>
+                                                <th>得分</th>
+                                                <th>时间</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="(pair, index) in undoPairs" :key="'undo-' + index">
+                                                <td>{{ index + 1 }}</td>
+                                                <td>{{ pair.contact1 }}</td>
+                                                <td>{{ pair.contact2 }}</td>
+                                                <td>
+                                                    <span class="badge bg-warning">{{ pair.score || 0 }}分</span>
+                                                </td>
+                                                <td>{{ pair.timestamp || new Date().toLocaleString() }}</td>
+                                            </tr>
+                                            <tr v-if="undoPairs.length === 0">
+                                                <td colspan="5" class="text-center text-muted py-4">
+                                                    暂无拆除接线记录
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -1269,6 +1398,8 @@
                     aiLoading: false,
                     chatMessages: [],
 
+
+
                     // Socket.IO
                     socket: null,
 
@@ -1300,10 +1431,21 @@
                     errorWiringCount: 0,
                     // 上一次的接线情况，用于避免重复记录
                     lastWiringStatus: null,
-                    // 自动生成的题目
+                    // 自动生成题目
                     autoGeneratedQuestion: null,
                     // 自动生成题目时的加载状态
-                    autoQuestionLoading: false
+                    autoQuestionLoading: false,
+                    
+                    // 考试规则选择
+                    availableRules: [],
+                    selectedRule: '',
+                    
+                    // 新增接线和拆除接线列表
+                    addPairs: [],
+                    undoPairs: [],
+                    
+                    // 文件上传服务器URL
+                    uploadServerUrl: ''
                 }
             },
 
@@ -1345,6 +1487,9 @@
                 
                 // 加载知识点列表，用于自动生成题目
                 this.loadKnowledgeList();
+                
+                // 加载可用的考试规则
+                this.loadAvailableRules();
                 const app = Vue.createApp({
                 data() {
                   return {
@@ -1554,6 +1699,87 @@
                         console.log('初始化接线结果');
                     } catch (error) {
                         console.error('加载初始数据失败:', error);
+                    }
+                },
+                
+                // 加载可用的考试规则
+                async loadAvailableRules() {
+                    try {
+                        const response = await fetch('/api/get_rules');
+                        const data = await response.json();
+                        if (data.success) {
+                            this.availableRules = data.rules;
+                        }
+                    } catch (error) {
+                        console.error('加载可用考试规则失败:', error);
+                    }
+                },
+                
+                // 确认选择考试规则
+                async confirmRuleSelection() {
+                    if (!this.selectedRule) return;
+                    
+                    const confirmMessage = `确认要使用当前${this.selectedRule}考试规则吗？`;
+                    if (confirm(confirmMessage)) {
+                        try {
+                            const response = await fetch('/api/set_rule', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({ rule: this.selectedRule })
+                            });
+                            
+                            const data = await response.json();
+                            if (data.success) {
+                                alert('考试规则已更新！');
+                            } else {
+                                alert(`更新考试规则失败: ${data.message}`);
+                            }
+                        } catch (error) {
+                            console.error('更新考试规则失败:', error);
+                            alert('更新考试规则失败');
+                        }
+                    } else {
+                        // 用户取消选择，重置下拉框
+                        this.selectedRule = '';
+                    }
+                },
+                
+                // 处理文件上传
+                async handleFileUpload(event) {
+                    const file = event.target.files[0];
+                    if (!file) return;
+                    
+                    // 验证文件类型
+                    const allowedExtensions = ['.zip', '.rar', '.7z', '.tar.gz', '.tgz'];
+                    const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+                    if (!allowedExtensions.includes(fileExtension)) {
+                        alert('请上传支持的压缩包格式：.zip, .rar, .7z, .tar.gz, .tgz');
+                        return;
+                    }
+                    
+                    // 创建FormData对象
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    
+                    try {
+                        const response = await fetch('/api/upload_file', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        const data = await response.json();
+                        if (data.success) {
+                            alert(`文件上传成功：${file.name}`);
+                            // 重置文件输入
+                            event.target.value = '';
+                        } else {
+                            alert(`文件上传失败：${data.message}`);
+                        }
+                    } catch (error) {
+                        console.error('文件上传失败:', error);
+                        alert('文件上传失败，请重试');
                     }
                 },
                 
@@ -2221,77 +2447,27 @@
                         .then((response) => response.json())
                         .then((data) => {
                             // 更新当前分数
-                            this.currentScore = data.score;
-                            // 更新当前触点信息
-                            if (data.contact_A && data.contact_B) {
-                                this.current_A = data.contact_A;
-                                this.current_B = data.contact_B;
-                                // 更新最新接线触点
-                                this.latestContacts = [data.contact_A, data.contact_B];
-                                
-                                // 创建当前接线状态的唯一标识（处理无向连接，确保A-B和B-A视为相同）
-                                const sortedContacts = [...[data.contact_A, data.contact_B]].sort();
-                                // 对于拆除操作，忽略分数变化，避免相同的拆除操作被视为不同的操作
-                                const currentWiringKey = data.wired_status === 'sub' 
-                                    ? `${sortedContacts[0]}-${sortedContacts[1]}-${data.wired_status}`
-                                    : `${sortedContacts[0]}-${sortedContacts[1]}-${data.score}-${data.wired_status}`;
-                                
-                                // 获取上一次的接线状态标识
-                                const lastWiringKey = this.lastWiringStatus && this.lastWiringStatus.contact_A && this.lastWiringStatus.contact_B && this.lastWiringStatus.wired_status
-                                    ? (() => {
-                                        const sortedLastContacts = [...[this.lastWiringStatus.contact_A, this.lastWiringStatus.contact_B]].sort();
-                                        return this.lastWiringStatus.wired_status === 'sub' 
-                                            ? `${sortedLastContacts[0]}-${sortedLastContacts[1]}-${this.lastWiringStatus.wired_status}`
-                                            : `${sortedLastContacts[0]}-${sortedLastContacts[1]}-${this.lastWiringStatus.score}-${this.lastWiringStatus.wired_status}`;
-                                      })()
-                                    : null;
-                                
-                                // 处理wired_status
-                                if (data.wired_status === 'error') {
-                                    // 只有当上次不是错误状态时，才显示警告弹窗
-                                    if (!this.lastWiringStatus || this.lastWiringStatus.wired_status !== 'error') {
-                                        // 显示警告弹窗
-                                        alert('当前操作不规范，请重试。');
-                                    }
-                                    // 无论是否显示弹窗，都更新上一次的接线情况
-                                    this.lastWiringStatus = {
-                                        contact_A: data.contact_A,
-                                        contact_B: data.contact_B,
-                                        score: data.score,
-                                        wired_status: data.wired_status
-                                    };
-                                } else if (currentWiringKey !== lastWiringKey) {
-                                    // 确定操作类型
-                                    let actionText = '未知操作';
-                                    if (data.wired_status === 'add') {
-                                        actionText = '连接导线';
-                                    } else if (data.wired_status === 'sub') {
-                                        actionText = '拆除导线';
-                                    }
-                                    
-                                    // 创建新的接线记录
-                                    const newWiringResult = {
-                                        id: Date.now(),
-                                        end1: data.contact_A,
-                                        end2: data.contact_B,
-                                        action: actionText,
-                                        score: data.score || 0,
-                                        timestamp: new Date().toLocaleTimeString()
-                                    };
-                                    // 添加到接线结果列表
-                                    this.wiringResults.push(newWiringResult);
-                                    
-                                    // 更新上一次的接线情况
-                                    this.lastWiringStatus = {
-                                        contact_A: data.contact_A,
-                                        contact_B: data.contact_B,
-                                        score: data.score,
-                                        wired_status: data.wired_status
-                                    };
-                                    
-                                    // 当wired_status变化时，自动生成题目
-                                    this.autoGenerateQuestion();
+                            this.currentScore = data.total_score;
+                            
+                            // 更新新增接线和拆除接线列表
+                            if (data.add_pairs) {
+                                this.addPairs = data.add_pairs;
+                            }
+                            if (data.undo_pairs) {
+                                this.undoPairs = data.undo_pairs;
+                            }
+                            
+                            // 从新增接线记录中获取最新的触点信息
+                            if (this.addPairs.length > 0) {
+                                const latestAddPair = this.addPairs[this.addPairs.length - 1];
+                                if (latestAddPair.contact1 && latestAddPair.contact2) {
+                                    this.latestContacts = [latestAddPair.contact1, latestAddPair.contact2];
                                 }
+                            }
+                            
+                            // 当有新的接线记录时，自动生成题目
+                            if (this.addPairs.length > 0 || this.undoPairs.length > 0) {
+                                this.autoGenerateQuestion();
                             }
                         })
                         .catch((error) => {
