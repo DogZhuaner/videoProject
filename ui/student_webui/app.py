@@ -980,42 +980,7 @@ def test_set_wiring_data():
         return jsonify({"success": False, "message": f"测试设置接线数据时出错: {e}"})
 
 
-@app.route('/api/upload_file', methods=['POST'])
-def upload_file():
-    try:
-        from werkzeug.utils import secure_filename
-        
-        # 检查是否有文件上传
-        if 'file' not in request.files:
-            return jsonify({'success': False, 'message': '没有选择文件'})
-        
-        file = request.files['file']
-        
-        # 检查文件名是否为空
-        if file.filename == '':
-            return jsonify({'success': False, 'message': '没有选择文件'})
-        
-        # 验证文件类型
-        allowed_extensions = {'.zip', '.rar', '.7z', '.tar.gz', '.tgz'}
-        file_extension = os.path.splitext(file.filename)[1].lower()
-        if file_extension not in allowed_extensions:
-            return jsonify({'success': False, 'message': '不支持的文件格式，请上传压缩包文件'})
-        
-        # 创建上传目录（如果不存在）
-        upload_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../data/uploads'))
-        os.makedirs(upload_dir, exist_ok=True)
-        
-        # 生成安全的文件名
-        filename = secure_filename(file.filename)
-        
-        # 保存文件到上传目录
-        file_path = os.path.join(upload_dir, filename)
-        file.save(file_path)
-        
-        return jsonify({'success': True, 'message': '文件上传成功', 'filename': filename})
-    except Exception as e:
-        print(f'文件上传失败: {e}')
-        return jsonify({'success': False, 'message': f'文件上传失败: {str(e)}'})
+
 
 
 if __name__ == '__main__':

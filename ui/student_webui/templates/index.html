@@ -1708,12 +1708,29 @@
                         return;
                     }
                     
+                    // 检查是否输入了服务器URL
+                    if (!this.uploadServerUrl) {
+                        alert('请先输入上传服务器URL');
+                        return;
+                    }
+                    
+                    // 创建完整的上传URL
+                    let uploadUrl = this.uploadServerUrl;
+                    // 确保URL格式正确
+                    if (!uploadUrl.startsWith('http://') && !uploadUrl.startsWith('https://')) {
+                        uploadUrl = 'http://' + uploadUrl;
+                    }
+                    // 确保URL指向/upload端点
+                    if (!uploadUrl.endsWith('/upload')) {
+                        uploadUrl = uploadUrl.endsWith('/') ? uploadUrl + 'upload' : uploadUrl + '/upload';
+                    }
+                    
                     // 创建FormData对象
                     const formData = new FormData();
                     formData.append('file', file);
                     
                     try {
-                        const response = await fetch('/api/upload_file', {
+                        const response = await fetch(uploadUrl, {
                             method: 'POST',
                             body: formData
                         });
@@ -1728,7 +1745,7 @@
                         }
                     } catch (error) {
                         console.error('文件上传失败:', error);
-                        alert('文件上传失败，请重试');
+                        alert(`文件上传失败，请检查服务器URL是否正确：${error.message}`);
                     }
                 },
                 
