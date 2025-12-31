@@ -64,8 +64,8 @@ def get_config_module():
             print("警告: 无法导入global_config模块，将使用模拟配置")
 
             class MockLoginSession:
-                sno = "2024001"
-                account_name = "测试学生"
+                sno = "20251001"
+                account_name = "李同学"
 
             class MockGlobalConfig:
                 student_json = "student_config.json"
