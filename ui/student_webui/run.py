@@ -37,13 +37,13 @@ def main():
     sys.path.insert(0, parent_dir)
 
     print("? 启动Web服务器...")
-    print("? 请在浏览器中访问: http://localhost:8090")
+    print("? 请在浏览器中访问: http://localhost:8088")
     print("=" * 50)
 
     try:
         # 导入并运行Flask应用
         from app import app, socketio
-        socketio.run(app, host='127.0.0.1', port=8090, debug=False)
+        socketio.run(app, host='127.0.0.1', port=8088, debug=False)
     except KeyboardInterrupt:
         print("\n? 服务器已停止")
     except Exception as e:
