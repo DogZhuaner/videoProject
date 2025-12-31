@@ -72,6 +72,13 @@ def get_config_module():
                 rule_csv_path = "rule.csv"
                 rule_server_ip = "localhost"
                 rule_server_port = 8080
+                
+                # 添加缺失的属性
+                total_score = 0
+                current_wired_score = 0
+                wired_status = ""
+                add_pairs = []  # 新增触点对
+                undo_pairs = []  # 撤回触点对
 
             config_module = {
                 'Login_Session': MockLoginSession(),
@@ -618,14 +625,28 @@ def get_air_switch_status():
 def get_score_and_contact():
     """获取实时总分和接线情况，包括新增和撤回的触点对"""
     try:
-        from global_config import Global_Config
+        # 获取配置模块，确保使用正确的配置（实际配置或模拟配置）
+        config = get_config_module()
+        Global_Config = config['Global_Config']
         
-        score_wired_status = {
-            "total_score": Global_Config.total_score,
-            "add_pairs": Global_Config.add_pairs,
-            "undo_pairs": Global_Config.undo_pairs,
-            "wired_status": Global_Config.wired_status
-        }
+        # 检查Global_Config是类还是实例
+        if isinstance(Global_Config, type):
+            # 如果是类，直接访问类属性
+            score_wired_status = {
+                "total_score": Global_Config.total_score,
+                "add_pairs": Global_Config.add_pairs,
+                "undo_pairs": Global_Config.undo_pairs,
+                "wired_status": Global_Config.wired_status
+            }
+        else:
+            # 如果是实例，访问实例属性
+            score_wired_status = {
+                "total_score": Global_Config.total_score,
+                "add_pairs": Global_Config.add_pairs,
+                "undo_pairs": Global_Config.undo_pairs,
+                "wired_status": Global_Config.wired_status
+            }
+        
         return jsonify(score_wired_status)
     except Exception as e:
         print(f"获取分数和接线情况失败: {e}")
@@ -888,8 +909,75 @@ def test_wired_status():
         }
         return jsonify(response)
     except Exception as e:
-        print(f"测试设置接线触点时出错: {e}")
-        return jsonify({"success": False, "message": f"测试设置接线触点时出错: {e}"})
+        return jsonify({"success": False, "message": f"测试wired_status时出错: {e}"})
+
+
+@app.route('/api/test_set_wiring_data', methods=['POST'])
+def test_set_wiring_data():
+    """测试设置接线数据，包括新增和拆除的触点对"""
+    try:
+        # 获取配置模块，确保使用正确的配置（实际配置或模拟配置）
+        config = get_config_module()
+        Global_Config = config['Global_Config']
+        
+        # 获取请求数据
+        data = request.get_json()
+        
+        # 设置新增接线数据
+        if 'add_pairs' in data:
+            # 检查Global_Config是类还是实例
+            if isinstance(Global_Config, type):
+                # 如果是类，直接设置类属性
+                Global_Config.add_pairs = data['add_pairs']
+            else:
+                # 如果是实例，设置实例属性
+                Global_Config.add_pairs = data['add_pairs']
+            print(f"✅ 设置了 {len(data['add_pairs'])} 条新增接线数据")
+        
+        # 设置拆除接线数据
+        if 'undo_pairs' in data:
+            # 检查Global_Config是类还是实例
+            if isinstance(Global_Config, type):
+                # 如果是类，直接设置类属性
+                Global_Config.undo_pairs = data['undo_pairs']
+            else:
+                # 如果是实例，设置实例属性
+                Global_Config.undo_pairs = data['undo_pairs']
+            print(f"✅ 设置了 {len(data['undo_pairs'])} 条拆除接线数据")
+        
+        # 设置总分
+        if 'total_score' in data:
+            # 检查Global_Config是类还是实例
+            if isinstance(Global_Config, type):
+                # 如果是类，直接设置类属性
+                Global_Config.total_score = data['total_score']
+            else:
+                # 如果是实例，设置实例属性
+                Global_Config.total_score = data['total_score']
+            print(f"✅ 设置了总分为: {data['total_score']}")
+        
+        # 构建响应
+        if isinstance(Global_Config, type):
+            response = {
+                "success": True,
+                "message": "接线数据设置完成",
+                "total_score": Global_Config.total_score,
+                "add_pairs": Global_Config.add_pairs,
+                "undo_pairs": Global_Config.undo_pairs
+            }
+        else:
+            response = {
+                "success": True,
+                "message": "接线数据设置完成",
+                "total_score": Global_Config.total_score,
+                "add_pairs": Global_Config.add_pairs,
+                "undo_pairs": Global_Config.undo_pairs
+            }
+        
+        return jsonify(response)
+    except Exception as e:
+        print(f"测试设置接线数据时出错: {e}")
+        return jsonify({"success": False, "message": f"测试设置接线数据时出错: {e}"})
 
 
 @app.route('/api/upload_file', methods=['POST'])

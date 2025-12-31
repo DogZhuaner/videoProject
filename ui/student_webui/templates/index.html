@@ -821,133 +821,82 @@
                                     </div>
                                 </div>
 
-                                <div class="table-responsive">
-                                    <table class="table table-custom">
-                                        <thead>
-                                            <tr>
-                                                <th>序号</th>
-                                                <th>导线一端</th>
-                                                <th>导线另一端</th>
-                                                <th>操作</th>
-                                                <th>得分</th>
-                                                <th>时间</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <!-- 显示接线结果 -->
-                                            <tr v-for="(result, index) in wiringResults" :key="result.id" data-aos="fade-up">
-                                                <td>{{ index + 1 }}</td>
-                                                <td>{{ result.end1 }}</td>
-                                                <td>{{ result.end2 }}</td>
-                                                <td>
-                                                    <span
-                                                        class="badge"
-                                                        :class="result.action === '连接导线' ? 'bg-success' : (result.action === '拆除导线' ? 'bg-warning' : 'bg-secondary')">
-                                                        {{ result.action || '未知操作' }}
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <span
-                                                        class="badge"
-                                                        :class="result.score >= 0 ? 'bg-success' : 'bg-danger'">
-                                                        {{ result.score }}分
-                                                    </span>
-                                                </td>
-                                                <td>{{ result.timestamp }}</td>
-                                            </tr>
-                                            
-                                            <tr v-if="wiringResults.length === 0">
-                                                <td colspan="5" class="text-center text-muted py-4">
-                                                    <i class="bi bi-inbox display-4 d-block mb-3"></i>
-                                                    暂无接线记录
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
+                                <!-- 接线历史记录 -->
+                                <div class="mt-4">
+                                    <!-- 新增接线表格 -->
+                                    <h6 class="text-success mb-3">
+                                        <i class="bi bi-plus-circle me-2"></i>
+                                        新增接线
+                                    </h6>
+                                    <div class="table-responsive mb-4">
+                                        <table class="table table-custom">
+                                            <thead>
+                                                <tr>
+                                                    <th>序号</th>
+                                                    <th>触点1</th>
+                                                    <th>触点2</th>
+                                                    <th>得分</th>
+                                                    <th>时间</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-for="(pair, index) in addPairs" :key="'add-' + index">
+                                                    <td>{{ index + 1 }}</td>
+                                                    <td>{{ pair.contact1 }}</td>
+                                                    <td>{{ pair.contact2 }}</td>
+                                                    <td>
+                                                        <span class="badge bg-success">+{{ pair.score || 0 }}分</span>
+                                                    </td>
+                                                    <td>{{ pair.timestamp || new Date().toLocaleString() }}</td>
+                                                </tr>
+                                                <tr v-if="addPairs.length === 0">
+                                                    <td colspan="5" class="text-center text-muted py-4">
+                                                        暂无新增接线记录
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    
+                                    <!-- 拆除接线表格 -->
+                                    <h6 class="text-warning mb-3">
+                                        <i class="bi bi-dash-circle me-2"></i>
+                                        拆除接线
+                                    </h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-custom">
+                                            <thead>
+                                                <tr>
+                                                    <th>序号</th>
+                                                    <th>触点1</th>
+                                                    <th>触点2</th>
+                                                    <th>得分</th>
+                                                    <th>时间</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-for="(pair, index) in undoPairs" :key="'undo-' + index">
+                                                    <td>{{ index + 1 }}</td>
+                                                    <td>{{ pair.contact1 }}</td>
+                                                    <td>{{ pair.contact2 }}</td>
+                                                    <td>
+                                                        <span class="badge bg-warning">{{ pair.score || 0 }}分</span>
+                                                    </td>
+                                                    <td>{{ pair.timestamp || new Date().toLocaleString() }}</td>
+                                                </tr>
+                                                <tr v-if="undoPairs.length === 0">
+                                                    <td colspan="5" class="text-center text-muted py-4">
+                                                        暂无拆除接线记录
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         
-                        <!-- 接线历史记录 -->
-                        <div class="card card-custom mb-4" data-aos="fade-left" data-aos-delay="600">
-                            <div class="card-header bg-primary text-white">
-                                <h5 class="mb-0">
-                                    <i class="bi bi-clock-history me-2"></i>
-                                    接线历史记录
-                                </h5>
-                            </div>
-                            <div class="card-body">
-                                <!-- 新增接线表格 -->
-                                <h6 class="text-success mb-3">
-                                    <i class="bi bi-plus-circle me-2"></i>
-                                    新增接线
-                                </h6>
-                                <div class="table-responsive mb-4">
-                                    <table class="table table-custom">
-                                        <thead>
-                                            <tr>
-                                                <th>序号</th>
-                                                <th>触点1</th>
-                                                <th>触点2</th>
-                                                <th>得分</th>
-                                                <th>时间</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr v-for="(pair, index) in addPairs" :key="'add-' + index">
-                                                <td>{{ index + 1 }}</td>
-                                                <td>{{ pair.contact1 }}</td>
-                                                <td>{{ pair.contact2 }}</td>
-                                                <td>
-                                                    <span class="badge bg-success">+{{ pair.score || 0 }}分</span>
-                                                </td>
-                                                <td>{{ pair.timestamp || new Date().toLocaleString() }}</td>
-                                            </tr>
-                                            <tr v-if="addPairs.length === 0">
-                                                <td colspan="5" class="text-center text-muted py-4">
-                                                    暂无新增接线记录
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                                
-                                <!-- 拆除接线表格 -->
-                                <h6 class="text-warning mb-3">
-                                    <i class="bi bi-dash-circle me-2"></i>
-                                    拆除接线
-                                </h6>
-                                <div class="table-responsive">
-                                    <table class="table table-custom">
-                                        <thead>
-                                            <tr>
-                                                <th>序号</th>
-                                                <th>触点1</th>
-                                                <th>触点2</th>
-                                                <th>得分</th>
-                                                <th>时间</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr v-for="(pair, index) in undoPairs" :key="'undo-' + index">
-                                                <td>{{ index + 1 }}</td>
-                                                <td>{{ pair.contact1 }}</td>
-                                                <td>{{ pair.contact2 }}</td>
-                                                <td>
-                                                    <span class="badge bg-warning">{{ pair.score || 0 }}分</span>
-                                                </td>
-                                                <td>{{ pair.timestamp || new Date().toLocaleString() }}</td>
-                                            </tr>
-                                            <tr v-if="undoPairs.length === 0">
-                                                <td colspan="5" class="text-center text-muted py-4">
-                                                    暂无拆除接线记录
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
+
                         
                         <!-- 自动生成题目信息框 -->
                         <div class="card card-custom mb-4" data-aos="fade-left" data-aos-delay="600">
@@ -2449,12 +2398,14 @@
                             // 更新当前分数
                             this.currentScore = data.total_score;
                             
-                            // 更新新增接线和拆除接线列表
-                            if (data.add_pairs) {
-                                this.addPairs = data.add_pairs;
+                            // 更新新增接线和拆除接线列表 - 保留历史记录
+                            if (data.add_pairs && data.add_pairs.length > 0) {
+                                // 将新数据追加到现有数组中
+                                this.addPairs = [...this.addPairs, ...data.add_pairs];
                             }
-                            if (data.undo_pairs) {
-                                this.undoPairs = data.undo_pairs;
+                            if (data.undo_pairs && data.undo_pairs.length > 0) {
+                                // 将新数据追加到现有数组中
+                                this.undoPairs = [...this.undoPairs, ...data.undo_pairs];
                             }
                             
                             // 从新增接线记录中获取最新的触点信息
